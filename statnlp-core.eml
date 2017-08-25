@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component LANGUAGE_LEVEL="JDK_1_8" inheritJdk="true">
+	<output-test url="file://$MODULE_DIR$/target/test-classes"/>
+	<contentEntry url="file://$MODULE_DIR$">
+		<testFolder url="file://$MODULE_DIR$/src/test/java"/>
+		<testFolder url="file://$MODULE_DIR$/src/test/resources"/>
+		<excludeFolder url="file://$MODULE_DIR$/target"/>
+	</contentEntry>
+	<lib name="Maven: junit:junit:4.11" scope="TEST"/>
+	<lib name="Maven: org.hamcrest:hamcrest-core:1.3" scope="TEST"/>
+	<levels>
+		<level name="Maven: junit:junit:4.11" value="project"/>
+		<level name="Maven: org.hamcrest:hamcrest-core:1.3" value="project"/>
+		<level name="Maven: org.apache.logging.log4j:log4j-api:2.8.2" value="project"/>
+		<level name="Maven: org.apache.logging.log4j:log4j-core:2.8.2" value="project"/>
+		<level name="Maven: net.sf.trove4j:trove4j:3.0.3" value="project"/>
+		<level name="Maven: net.sourceforge.argparse4j:argparse4j:0.7.0" value="project"/>
+		<level name="Maven: org.msgpack:msgpack-core:0.8.8" value="project"/>
+		<level name="Maven: org.zeromq:jzmq:3.1.0" value="project"/>
+		<level name="Maven: net.java.dev.jna:jna:4.4.0" value="project"/>
+		<level name="Maven: th4j-core:th4j-core_2.11:0.1" value="project"/>
+		<level name="Maven: org.scala-lang:scala-library:2.11.7" value="project"/>
+		<level name="Maven: th4j-generate:th4j-generate_2.11:0.1" value="project"/>
+		<level name="Maven: org.scala-lang:scala-reflect:2.11.7" value="project"/>
+		<level name="Maven: com.typesafe.play:play-json_2.11:2.3.4" value="project"/>
+		<level name="Maven: com.typesafe.play:play-iteratees_2.11:2.3.4" value="project"/>
+		<level name="Maven: org.scala-stm:scala-stm_2.11:0.7" value="project"/>
+		<level name="Maven: com.typesafe:config:1.2.1" value="project"/>
+		<level name="Maven: com.typesafe.play:play-functional_2.11:2.3.4" value="project"/>
+		<level name="Maven: com.typesafe.play:play-datacommons_2.11:2.3.4" value="project"/>
+		<level name="Maven: joda-time:joda-time:2.3" value="project"/>
+		<level name="Maven: org.joda:joda-convert:1.6" value="project"/>
+		<level name="Maven: com.fasterxml.jackson.core:jackson-annotations:2.3.2" value="project"/>
+		<level name="Maven: com.fasterxml.jackson.core:jackson-core:2.3.2" value="project"/>
+		<level name="Maven: com.fasterxml.jackson.core:jackson-databind:2.3.2" value="project"/>
+		<level name="Maven: net.sf.jung:jung-visualization:2.0.1" value="project"/>
+		<level name="Maven: net.sf.jung:jung-api:2.0.1" value="project"/>
+		<level name="Maven: net.sf.jung:jung-algorithms:2.0.1" value="project"/>
+		<level name="Maven: colt:colt:1.2.0" value="project"/>
+		<level name="Maven: concurrent:concurrent:1.3.4" value="project"/>
+		<level name="Maven: net.sf.jung:jung-graph-impl:2.0.1" value="project"/>
+		<level name="Maven: net.sourceforge.collections:collections-generic:4.01" value="project"/>
+		<level name="Maven: org.freehep:freehep-graphicsio:2.1.3" value="project"/>
+		<level name="Maven: org.freehep:freehep-io:2.0.5" value="project"/>
+		<level name="Maven: org.freehep:freehep-graphics-base:2.1.3" value="project"/>
+		<level name="Maven: org.freehep:freehep-graphics2d:2.1.3" value="project"/>
+		<level name="Maven: org.freehep:freehep-graphicsio-pdf:2.1.3" value="project"/>
+		<level name="Maven: org.freehep:freehep-graphicsio-tests:2.1.3" value="project"/>
+		<level name="Maven: com.nebula2d:jnlua:1.0.4" value="project"/>
+	</levels>
+</component>

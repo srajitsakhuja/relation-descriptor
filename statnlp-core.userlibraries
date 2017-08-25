@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<eclipse-userlibraries>
+  <library name="Maven: junit:junit:4.11">
+    <archive path="/Users/srajitsakhuja/.m2/repository/junit/junit/4.11/junit-4.11.jar" />
+  </library>
+  <library name="Maven: org.hamcrest:hamcrest-core:1.3">
+    <archive path="/Users/srajitsakhuja/.m2/repository/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar" />
+  </library>
+  <library name="Maven: org.apache.logging.log4j:log4j-api:2.8.2">
+    <archive path="/Users/srajitsakhuja/.m2/repository/org/apache/logging/log4j/log4j-api/2.8.2/log4j-api-2.8.2.jar" />
+  </library>
+  <library name="Maven: org.apache.logging.log4j:log4j-core:2.8.2">
+    <archive path="/Users/srajitsakhuja/.m2/repository/org/apache/logging/log4j/log4j-core/2.8.2/log4j-core-2.8.2.jar" />
+  </library>
+  <library name="Maven: net.sf.trove4j:trove4j:3.0.3">
+    <archive path="/Users/srajitsakhuja/.m2/repository/net/sf/trove4j/trove4j/3.0.3/trove4j-3.0.3.jar" />
+  </library>
+  <library name="Maven: net.sourceforge.argparse4j:argparse4j:0.7.0">
+    <archive path="/Users/srajitsakhuja/.m2/repository/net/sourceforge/argparse4j/argparse4j/0.7.0/argparse4j-0.7.0.jar" />
+  </library>
+  <library name="Maven: org.msgpack:msgpack-core:0.8.8">
+    <archive path="/Users/srajitsakhuja/.m2/repository/org/msgpack/msgpack-core/0.8.8/msgpack-core-0.8.8.jar" />
+  </library>
+  <library name="Maven: org.zeromq:jzmq:3.1.0">
+    <archive path="/Users/srajitsakhuja/.m2/repository/org/zeromq/jzmq/3.1.0/jzmq-3.1.0.jar" />
+  </library>
+  <library name="Maven: net.java.dev.jna:jna:4.4.0">
+    <archive path="/Users/srajitsakhuja/.m2/repository/net/java/dev/jna/jna/4.4.0/jna-4.4.0.jar" />
+  </library>
+  <library name="Maven: th4j-core:th4j-core_2.11:0.1">
+    <archive path="/Users/srajitsakhuja/.m2/repository/th4j-core/th4j-core_2.11/0.1/th4j-core_2.11-0.1.jar" />
+  </library>
+  <library name="Maven: org.scala-lang:scala-library:2.11.7">
+    <archive path="/Users/srajitsakhuja/.m2/repository/org/scala-lang/scala-library/2.11.7/scala-library-2.11.7.jar" />
+  </library>
+  <library name="Maven: th4j-generate:th4j-generate_2.11:0.1">
+    <archive path="/Users/srajitsakhuja/.m2/repository/th4j-generate/th4j-generate_2.11/0.1/th4j-generate_2.11-0.1.jar" />
+  </library>
+  <library name="Maven: org.scala-lang:scala-reflect:2.11.7">
+    <archive path="/Users/srajitsakhuja/.m2/repository/org/scala-lang/scala-reflect/2.11.7/scala-reflect-2.11.7.jar" />
+  </library>
+  <library name="Maven: com.typesafe.play:play-json_2.11:2.3.4">
+    <archive path="/Users/srajitsakhuja/.m2/repository/com/typesafe/play/play-json_2.11/2.3.4/play-json_2.11-2.3.4.jar" />
+  </library>
+  <library name="Maven: com.typesafe.play:play-iteratees_2.11:2.3.4">
+    <archive path="/Users/srajitsakhuja/.m2/repository/com/typesafe/play/play-iteratees_2.11/2.3.4/play-iteratees_2.11-2.3.4.jar" />
+  </library>
+  <library name="Maven: org.scala-stm:scala-stm_2.11:0.7">
+    <archive path="/Users/srajitsakhuja/.m2/repository/org/scala-stm/scala-stm_2.11/0.7/scala-stm_2.11-0.7.jar" />
+  </library>
+  <library name="Maven: com.typesafe:config:1.2.1">
+    <archive path="/Users/srajitsakhuja/.m2/repository/com/typesafe/config/1.2.1/config-1.2.1.jar" />
+  </library>
+  <library name="Maven: com.typesafe.play:play-functional_2.11:2.3.4">
+    <archive path="/Users/srajitsakhuja/.m2/repository/com/typesafe/play/play-functional_2.11/2.3.4/play-functional_2.11-2.3.4.jar" />
+  </library>
+  <library name="Maven: com.typesafe.play:play-datacommons_2.11:2.3.4">
+    <archive path="/Users/srajitsakhuja/.m2/repository/com/typesafe/play/play-datacommons_2.11/2.3.4/play-datacommons_2.11-2.3.4.jar" />
+  </library>
+  <library name="Maven: joda-time:joda-time:2.3">
+    <archive path="/Users/srajitsakhuja/.m2/repository/joda-time/joda-time/2.3/joda-time-2.3.jar" />
+  </library>
+  <library name="Maven: org.joda:joda-convert:1.6">
+    <archive path="/Users/srajitsakhuja/.m2/repository/org/joda/joda-convert/1.6/joda-convert-1.6.jar" />
+  </library>
+  <library name="Maven: com.fasterxml.jackson.core:jackson-annotations:2.3.2">
+    <archive path="/Users/srajitsakhuja/.m2/repository/com/fasterxml/jackson/core/jackson-annotations/2.3.2/jackson-annotations-2.3.2.jar" />
+  </library>
+  <library name="Maven: com.fasterxml.jackson.core:jackson-core:2.3.2">
+    <archive path="/Users/srajitsakhuja/.m2/repository/com/fasterxml/jackson/core/jackson-core/2.3.2/jackson-core-2.3.2.jar" />
+  </library>
+  <library name="Maven: com.fasterxml.jackson.core:jackson-databind:2.3.2">
+    <archive path="/Users/srajitsakhuja/.m2/repository/com/fasterxml/jackson/core/jackson-databind/2.3.2/jackson-databind-2.3.2.jar" />
+  </library>
+  <library name="Maven: net.sf.jung:jung-visualization:2.0.1">
+    <archive path="/Users/srajitsakhuja/.m2/repository/net/sf/jung/jung-visualization/2.0.1/jung-visualization-2.0.1.jar" />
+  </library>
+  <library name="Maven: net.sf.jung:jung-api:2.0.1">
+    <archive path="/Users/srajitsakhuja/.m2/repository/net/sf/jung/jung-api/2.0.1/jung-api-2.0.1.jar" />
+  </library>
+  <library name="Maven: net.sf.jung:jung-algorithms:2.0.1">
+    <archive path="/Users/srajitsakhuja/.m2/repository/net/sf/jung/jung-algorithms/2.0.1/jung-algorithms-2.0.1.jar" />
+  </library>
+  <library name="Maven: colt:colt:1.2.0">
+    <archive path="/Users/srajitsakhuja/.m2/repository/colt/colt/1.2.0/colt-1.2.0.jar" />
+  </library>
+  <library name="Maven: concurrent:concurrent:1.3.4">
+    <archive path="/Users/srajitsakhuja/.m2/repository/concurrent/concurrent/1.3.4/concurrent-1.3.4.jar" />
+  </library>
+  <library name="Maven: net.sf.jung:jung-graph-impl:2.0.1">
+    <archive path="/Users/srajitsakhuja/.m2/repository/net/sf/jung/jung-graph-impl/2.0.1/jung-graph-impl-2.0.1.jar" />
+  </library>
+  <library name="Maven: net.sourceforge.collections:collections-generic:4.01">
+    <archive path="/Users/srajitsakhuja/.m2/repository/net/sourceforge/collections/collections-generic/4.01/collections-generic-4.01.jar" />
+  </library>
+  <library name="Maven: org.freehep:freehep-graphicsio:2.1.3">
+    <archive path="/Users/srajitsakhuja/.m2/repository/org/freehep/freehep-graphicsio/2.1.3/freehep-graphicsio-2.1.3.jar" />
+  </library>
+  <library name="Maven: org.freehep:freehep-io:2.0.5">
+    <archive path="/Users/srajitsakhuja/.m2/repository/org/freehep/freehep-io/2.0.5/freehep-io-2.0.5.jar" />
+  </library>
+  <library name="Maven: org.freehep:freehep-graphics-base:2.1.3">
+    <archive path="/Users/srajitsakhuja/.m2/repository/org/freehep/freehep-graphics-base/2.1.3/freehep-graphics-base-2.1.3.jar" />
+  </library>
+  <library name="Maven: org.freehep:freehep-graphics2d:2.1.3">
+    <archive path="/Users/srajitsakhuja/.m2/repository/org/freehep/freehep-graphics2d/2.1.3/freehep-graphics2d-2.1.3.jar" />
+  </library>
+  <library name="Maven: org.freehep:freehep-graphicsio-pdf:2.1.3">
+    <archive path="/Users/srajitsakhuja/.m2/repository/org/freehep/freehep-graphicsio-pdf/2.1.3/freehep-graphicsio-pdf-2.1.3.jar" />
+  </library>
+  <library name="Maven: org.freehep:freehep-graphicsio-tests:2.1.3">
+    <archive path="/Users/srajitsakhuja/.m2/repository/org/freehep/freehep-graphicsio-tests/2.1.3/freehep-graphicsio-tests-2.1.3.jar" />
+  </library>
+  <library name="Maven: com.nebula2d:jnlua:1.0.4">
+    <archive path="/Users/srajitsakhuja/.m2/repository/com/nebula2d/jnlua/1.0.4/jnlua-1.0.4.jar" />
+  </library>
+</eclipse-userlibraries>
+
