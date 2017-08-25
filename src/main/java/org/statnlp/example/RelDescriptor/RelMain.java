@@ -20,6 +20,10 @@ public class RelMain {
     private static int fileId;
     private static List<String> partialAccuracies=new ArrayList<>();
     private static List<String> completeAccuracies=new ArrayList<>();
+    private static List<String> partialPrecs=new ArrayList<>();
+    private static List<String> completePrecs=new ArrayList<>();
+    private static List<String> partialRecs=new ArrayList<>();
+    private static List<String> completeRecs=new ArrayList<>();
     private static String trainFilePath="data/RelDataSet/nyt_train";
     private static String testFilePath="data/RelDataSet/nyt_test";
     private static int trainNum=1000;
@@ -56,48 +60,72 @@ public class RelMain {
             RelInstance testInsts[]=readData(testFilePath+i, false, testNum);
             Instance[] results=model.decode(testInsts);
 
-            int totalCount=0;
-            int partialCount=0;
-            int completeCount=0;
+
+            int partial[]={0,0,0,0};
+            int complete[]={0,0,0,0};
             for(Instance res:results){
                 RelInstance inst=(RelInstance) res;
                 List<String> gold=inst.getOutput();
                 List<String> pred=inst.getPrediction();
                 Evaluator eval=new Evaluator(gold,pred);
-                totalCount+=eval.totalCount;
-                partialCount+=eval.partialCount;
-                completeCount+=eval.completeCount;
+                for(int k=0; k<complete.length; k++){
+                    complete[k]+=eval.complete[k];
+                    partial[k]+=eval.partial[k];
+                }
             }
-            //System.out.println("TOTAL"+totalCount);
-            double partialAccuracy=100.0;
-            double completeAccuracy=100.0;
-            if(totalCount>0) {
-                partialAccuracy = (double) partialCount / totalCount;
-                completeAccuracy = (double) completeCount / totalCount;
-            }
-            //System.out.println(partialAccuracy);
-            //System.out.println(completeAccuracy);
-            partialAccuracies.add(partialAccuracy+"");
-            completeAccuracies.add(completeAccuracy+"");
+            int partialTP=partial[0]; int partialTN=partial[1]; int partialFP=partial[2]; int partialFN=partial[3];
+            System.out.println("TP\tTN\tFP\tFN");
+            double pprecision=(partialTP*100.0/(partialTP+partialFP));
+            double precall=(partialTP*100.0/(partialTP+partialFN));
+            double paccuracy=(partialTP+partialTN)*100.0/(partialTP+partialTN+partialFP+partialFN);
+            partialPrecs.add(pprecision+"");
+            partialRecs.add(precall+"");
+            partialAccuracies.add(paccuracy+"");
+
+            int completeTP=complete[0];int completeTN=complete[1];int completeFP=complete[2]; int completeFN=complete[3];
+            double cprecision=(completeTP*100.0)/(partialTP+partialFP);
+            double crecall=(completeTP*100.0)/(completeTP+completeFP);
+            double caccuracy=(completeTP+completeTN)*100.0/(completeTP+completeTN+completeFP+completeFN);
+            completePrecs.add(cprecision+"");
+            completeRecs.add(crecall+"");
+            completeAccuracies.add(caccuracy+"");
         }
-        double partialAverage=0.0;
-        double completeAverage=0.0;
+        double partialAccuracyAverage=0.0;
+        double partialPrecAverage=0.0;
+        double partialRecAverage=0.0;
+
+        double completeAccuracyAverage=0.0;
+        double completePrecAverage=0.0;
+        double completeRecAverage=0.0;
         int limit=fileId;
         if(oneFile){
-            System.out.println("HI");
             limit=1;
         }
-
+        System.out.println("PARTIAL:");
+        System.out.println("ACCURACY\tPRECISION\tRECALL");
         for(i=0; i<limit; i++){
-            System.out.println(partialAccuracies.get(i)+" "+completeAccuracies.get(i));
-            partialAverage+=Double.parseDouble(partialAccuracies.get(i));
-            completeAverage+=Double.parseDouble(completeAccuracies.get(i));
+            System.out.println(partialAccuracies.get(i)+"\t"+partialPrecs.get(i)+"\t"+partialRecs.get(i));
+            partialAccuracyAverage+=Double.parseDouble(partialAccuracies.get(i));
+            partialPrecAverage+=Double.parseDouble(partialPrecs.get(i));
+            partialRecAverage+=Double.parseDouble(partialRecs.get(i));
         }
-        partialAverage/=fileId;
-        completeAverage/=fileId;
-        System.out.println("CROSS VALIDATION ACCURACIES:");
-        System.out.println("PARTIAL:"+partialAverage);
-        System.out.println("COMPLETE:"+completeAverage);
+        partialAccuracyAverage/=limit;
+        partialPrecAverage/=limit;
+        partialRecAverage/=limit;
+        System.out.println(partialAccuracyAverage+"\t"+partialPrecAverage+"\t"+partialRecAverage+"\n\n");
+
+        System.out.println("COMPLETE:");
+        System.out.println("ACCURACY\tPRECISION\tRECALL");
+        for(i=0; i<limit; i++){
+            System.out.println(completeAccuracies.get(i)+"\t"+completePrecs.get(i)+"\t"+completeRecs.get(i));
+            completeAccuracyAverage+=Double.parseDouble(completeAccuracies.get(i));
+            completePrecAverage+=Double.parseDouble(completePrecs.get(i));
+            completeRecAverage+=Double.parseDouble(completeRecs.get(i));
+        }
+        completeAccuracyAverage/=limit;
+        completePrecAverage/=limit;
+        completeRecAverage/=limit;
+        System.out.println(completeAccuracyAverage+"\t"+completePrecAverage+"\t"+completeRecAverage+"\n\n");
     }
 
     public static RelInstance[] readData(String fpath, boolean isTraining, int limit) throws IOException{

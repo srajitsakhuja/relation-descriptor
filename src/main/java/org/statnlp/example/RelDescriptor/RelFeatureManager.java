@@ -16,7 +16,7 @@ public class RelFeatureManager extends FeatureManager {
         super(param_g);
     }
     private enum FeatType{
-        unigram, bigram, transition, longContext;
+        unigram, bigram, transition, longContext, longPath;
     }
     @Override
     protected FeatureArray extract_helper(Network network, int parent_k, int[] children_k, int children_k_index) {
@@ -86,8 +86,9 @@ public class RelFeatureManager extends FeatureManager {
 
 
         //Long Range Features
-
         if(pos==inst.size()-1){
+            int arg1Idx=inst.getInput().arg1Idx;
+            int arg2Idx=inst.getInput().arg2Idx;
             List<WordToken> wordTokens=new ArrayList<WordToken>();
             List<Integer> tags=new ArrayList<Integer>();
 
@@ -116,45 +117,59 @@ public class RelFeatureManager extends FeatureManager {
             boolean relFound=false;
             int relStart=0;
             int relEnd=wts.size()-1;
-            for(int i=0; i<wordTokens.size(); i++){
-                if(!relFound && tags.get(i)==1){
-                    relStart=i;
-                    if(i>0){
-                        longWordl=wts.get(i-1).getForm();
-                        longTagl=wts.get(i-1).getTag();
+            for(int i=0; i<wordTokens.size(); i++) {
+                if (!relFound && tags.get(i) == 1) {
+                    relStart = i;
+                    if (i > 0) {
+                        longWordl = wts.get(i - 1).getForm();
+                        longTagl = wts.get(i - 1).getTag();
                     }
-                    relFound=true;
+                    relFound = true;
                 }
-                if(relFound && tags.get(i)==0){
-                    relEnd=i-1;
-                    longWordr=wts.get(i).getForm();
-                    longTagr=wts.get(i).getTag();
+                if (relFound && tags.get(i) == 0) {
+                    relEnd = i - 1;
+                    longWordr = wts.get(i).getForm();
+                    longTagr = wts.get(i).getTag();
 
                 }
             }
-            //DEBUGGING
-            /*if(inst.getInstanceId()==-81) {
-                System.out.println("++++++++++++++++++++++");
-                System.out.print(inst.getInstanceId() + ":::");
-                for (int i = 0; i < wts.size(); i++) {
-                    System.out.print(wts.get(i).getForm() + " ");
-                }
-                System.out.println();
-                System.out.println(tags);
-                System.out.println(longWordl);
-                System.out.println(longWordr);
-                System.out.println(relFound);
-                System.out.println(relStart);
-                System.out.println(relEnd);
-                System.out.println();
-            }*/
 
             if(relFound) {
+                //Contextual Features
                 for(int i=relStart; i<=relEnd; i++) {
-                    fs.add(_param_g.toFeature(network, FeatType.longContext.name(), tags.get(i) + "", longWordl));
-                    fs.add(_param_g.toFeature(network, FeatType.longContext.name(), tags.get(i) + "", longWordr));
-                    fs.add(_param_g.toFeature(network, FeatType.longContext.name(), tags.get(i) + "", longTagl));
-                    fs.add(_param_g.toFeature(network, FeatType.longContext.name(), tags.get(i) + "", longTagr));
+                    fs.add(_param_g.toFeature(network, FeatType.longContext.name()+"-wl", tags.get(i) + "", longWordl));
+                    fs.add(_param_g.toFeature(network, FeatType.longContext.name()+"-wr", tags.get(i) + "", longWordr));
+                    fs.add(_param_g.toFeature(network, FeatType.longContext.name()+"-tl", tags.get(i) + "", longTagl));
+                    fs.add(_param_g.toFeature(network, FeatType.longContext.name()+"-tl", tags.get(i) + "", longTagr));
+                }
+                //Path-Based Features
+                if(relStart>arg1Idx){
+                    for(int i=arg1Idx+1; i<relStart; i++){
+                        int relPos=relStart-i;
+                        fs.add(_param_g.toFeature(network, FeatType.longPath.name()+"-w"+relPos, tags.get(relStart)+" ", wts.get(i).getForm()));
+                        fs.add(_param_g.toFeature(network, FeatType.longPath.name()+"-t"+relPos, tags.get(relStart)+" ", wts.get(i).getTag()));
+                    }
+                }
+                else{
+                    for(int i=relStart+1; i<arg1Idx; i++){
+                        int relPos=relStart-i;
+                        fs.add(_param_g.toFeature(network, FeatType.longPath.name()+"-w"+relPos, tags.get(relStart)+" ", wts.get(i).getForm()));
+                        fs.add(_param_g.toFeature(network, FeatType.longPath.name()+"-t"+relPos, tags.get(relStart)+" ", wts.get(i).getTag()));
+                    }
+                }
+                if(relStart>arg2Idx){
+                    for(int i=arg2Idx+1; i<relStart; i++){
+                        int relPos=relStart-i;
+                        fs.add(_param_g.toFeature(network, FeatType.longPath.name()+"-w"+relPos, tags.get(relStart)+" ", wts.get(i).getForm()));
+                        fs.add(_param_g.toFeature(network, FeatType.longPath.name()+"-t"+relPos, tags.get(relStart)+" ", wts.get(i).getTag()));
+                    }
+                }
+                else{
+                    for(int i=relStart+1; i<arg2Idx; i++){
+                        int relPos=relStart-i;
+                        fs.add(_param_g.toFeature(network, FeatType.longPath.name()+"-w"+relPos, tags.get(relStart)+" ", wts.get(i).getForm()));
+                        fs.add(_param_g.toFeature(network, FeatType.longPath.name()+"-t"+relPos, tags.get(relStart)+" ", wts.get(i).getTag()));
+                    }
                 }
             }
         }
