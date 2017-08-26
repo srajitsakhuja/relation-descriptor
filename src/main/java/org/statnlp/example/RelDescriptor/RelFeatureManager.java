@@ -136,41 +136,79 @@ public class RelFeatureManager extends FeatureManager {
 
             if(relFound) {
                 //Contextual Features
-                for(int i=relStart; i<=relEnd; i++) {
-                    fs.add(_param_g.toFeature(network, FeatType.longContext.name()+"-wl", tags.get(i) + "", longWordl));
-                    fs.add(_param_g.toFeature(network, FeatType.longContext.name()+"-wr", tags.get(i) + "", longWordr));
-                    fs.add(_param_g.toFeature(network, FeatType.longContext.name()+"-tl", tags.get(i) + "", longTagl));
-                    fs.add(_param_g.toFeature(network, FeatType.longContext.name()+"-tl", tags.get(i) + "", longTagr));
-                }
+//                fs.add(_param_g.toFeature(network, FeatType.longContext.name()+"-wl", "REL" , longWordl));
+//                fs.add(_param_g.toFeature(network, FeatType.longContext.name()+"-wr", "REL" , longWordr));
+//                fs.add(_param_g.toFeature(network, FeatType.longContext.name()+"-tl", "REL" , longTagl));
+//                fs.add(_param_g.toFeature(network, FeatType.longContext.name()+"-tl", "REL" , longTagr));
+
                 //Path-Based Features
+                String arg1PathWords="";
+                String arg1PathTags="";
                 if(relStart>arg1Idx){
                     for(int i=arg1Idx+1; i<relStart; i++){
-                        int relPos=relStart-i;
-                        fs.add(_param_g.toFeature(network, FeatType.longPath.name()+"-w"+relPos, tags.get(relStart)+" ", wts.get(i).getForm()));
-                        fs.add(_param_g.toFeature(network, FeatType.longPath.name()+"-t"+relPos, tags.get(relStart)+" ", wts.get(i).getTag()));
+                        arg1PathWords=arg1PathWords+wts.get(i).getForm()+" ";
+                        arg1PathTags=arg1PathTags+wts.get(i).getTag()+" ";
                     }
                 }
                 else{
                     for(int i=relStart+1; i<arg1Idx; i++){
-                        int relPos=relStart-i;
-                        fs.add(_param_g.toFeature(network, FeatType.longPath.name()+"-w"+relPos, tags.get(relStart)+" ", wts.get(i).getForm()));
-                        fs.add(_param_g.toFeature(network, FeatType.longPath.name()+"-t"+relPos, tags.get(relStart)+" ", wts.get(i).getTag()));
+                        arg1PathWords=arg1PathTags+wts.get(i).getForm()+" ";
+                        arg1PathTags=arg1PathTags+wts.get(i).getTag()+" ";
                     }
                 }
+
+                String arg2PathWords="";
+                String arg2PathTags="";
                 if(relStart>arg2Idx){
                     for(int i=arg2Idx+1; i<relStart; i++){
-                        int relPos=relStart-i;
-                        fs.add(_param_g.toFeature(network, FeatType.longPath.name()+"-w"+relPos, tags.get(relStart)+" ", wts.get(i).getForm()));
-                        fs.add(_param_g.toFeature(network, FeatType.longPath.name()+"-t"+relPos, tags.get(relStart)+" ", wts.get(i).getTag()));
+                        arg2PathWords=arg1PathWords+wts.get(i).getForm()+" ";
+                        arg2PathTags=arg2PathTags+wts.get(i).getTag();
                     }
                 }
                 else{
                     for(int i=relStart+1; i<arg2Idx; i++){
-                        int relPos=relStart-i;
-                        fs.add(_param_g.toFeature(network, FeatType.longPath.name()+"-w"+relPos, tags.get(relStart)+" ", wts.get(i).getForm()));
-                        fs.add(_param_g.toFeature(network, FeatType.longPath.name()+"-t"+relPos, tags.get(relStart)+" ", wts.get(i).getTag()));
+                        arg2PathWords=arg1PathWords+wts.get(i).getForm()+" ";
+                        arg2PathTags=arg2PathTags+wts.get(i).getTag();
                     }
                 }
+                String arg12PathWords="";
+                String arg12PathTags="";
+                int arg12Start=-1;
+                int arg12End=-1;
+                if(arg1Idx<arg2Idx){
+                    if(relStart<arg1Idx){
+                        arg12Start=relStart;
+                        arg12End=arg2Idx;
+                    }
+                    else{
+                        arg12Start=arg1Idx;
+                        arg12End=relStart>arg2Idx?relStart:arg2Idx;
+                    }
+                }
+                else{
+                    if(relStart<arg2Idx){
+                        arg12Start=relStart;
+                        arg12End=arg1Idx;
+                    }
+                    else{
+                        arg12Start=arg2Idx;
+                        arg12End=relStart>arg1Idx?relStart:arg1Idx;
+                    }
+                }
+
+                for(int i=arg12Start; i<=arg12End; i++){
+                    arg12PathWords=arg12PathWords+wts.get(i).getForm();
+                    arg12PathTags=arg12PathWords+wts.get(i).getTag();
+                }
+
+                fs.add(_param_g.toFeature(network, FeatType.longPath+"-w-arg1", "REL", arg1PathWords));
+                fs.add(_param_g.toFeature(network, FeatType.longPath+"-t-arg1", "REL", arg1PathTags));
+                fs.add(_param_g.toFeature(network, FeatType.longPath+"-w-arg2", "REL", arg2PathWords));
+                fs.add(_param_g.toFeature(network, FeatType.longPath+"-t-arg2", "REL", arg2PathTags));
+                fs.add(_param_g.toFeature(network, FeatType.longPath+"-w-arg12", "REL", arg12PathWords));
+                fs.add(_param_g.toFeature(network, FeatType.longPath+"-w-arg12", "REL", arg12PathTags));
+
+
             }
         }
         int childIdx=children_k[0];
