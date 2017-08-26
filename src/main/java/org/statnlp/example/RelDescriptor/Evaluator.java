@@ -53,18 +53,19 @@ public class Evaluator {
                     partialFlag = true;
                     break;
                 }
-                if (completeFlag) {
-                    complete[0] = 1; //True Positive
-                } else {
-                    complete[2] = 1; //False Positive
-                }
-                if (partialFlag) {
-                    partial[0] = 1; //True Positive
-                } else {
-                    partial[2] = 1; //False Positive
-                }
+            }
+            if (completeFlag) {
+                complete[0] = 1; //True Positive
+            } else {
+                complete[2] = 1; //False Positive
+            }
+            if (partialFlag) {
+                partial[0] = 1; //True Positive
+            } else {
+                partial[2] = 1; //False Positive
+            }
             }
         }
 
-    }
 }
+
