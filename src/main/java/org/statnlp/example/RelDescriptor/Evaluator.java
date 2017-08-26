@@ -14,12 +14,14 @@ public class Evaluator {
 
     Evaluator(List<String> gold, List<String> pred) {
         for(int i=0; i<gold.size(); i++){
-            if(gold.get(i).equals("B-R") || gold.get(i).equals("I-R")){
-                goldRelFlag=true;
+            if(gold.get(i).equals("B-R") || gold.get(i).equals("I-R")) {
+                goldRelFlag = true;
                 break;
             }
-            if( pred.get(i).equals("B-R") || pred.get(i).equals("I-R")){
-                predRelFlag=true;
+        }
+        for(int i=0; i<gold.size(); i++) {
+            if (pred.get(i).equals("B-R") || pred.get(i).equals("I-R")) {
+                predRelFlag = true;
                 break;
             }
         }
@@ -37,7 +39,7 @@ public class Evaluator {
             partial[2]=1; //False Positive
         }
         //goldRelFlag==true && predRelFlag==true
-        else {
+        else if(goldRelFlag && predRelFlag) {
             completeFlag = true;
             partialFlag = false;
             for (int i = 0; i < gold.size(); i++) {
