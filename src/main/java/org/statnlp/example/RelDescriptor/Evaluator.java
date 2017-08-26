@@ -7,90 +7,62 @@ public class Evaluator {
     private List<String> pred;
     private boolean partialFlag = false;
     private boolean completeFlag = false;
-    private boolean relFlag = false;
+    private boolean goldRelFlag = false;
+    private boolean predRelFlag=false;
     public int complete[]={0,0,0,0};
     public int partial[]={0,0,0,0};
 
     Evaluator(List<String> gold, List<String> pred) {
-        for (int i = 0; i < gold.size(); i++) {
-            System.out.print(gold.get(i) + "(" + i + ") ");
-            if (!gold.get(i).equals("O")) {
-                relFlag = true;
+        for(int i=0; i<gold.size(); i++){
+            if(gold.get(i).equals("B-R") || gold.get(i).equals("I-R")){
+                goldRelFlag=true;
+                break;
+            }
+            if( pred.get(i).equals("B-R") || pred.get(i).equals("I-R")){
+                predRelFlag=true;
+                break;
             }
         }
-        System.out.println();
-        for (int i = 0; i < pred.size(); i++) {
-            System.out.print(pred.get(i) + "(" + i + ") ");
+        //TP, TN, FP, FN
+        if(!goldRelFlag && !predRelFlag){
+            complete[1]=1; //True Negative
+            partial[1]=1; //True Negative
         }
-        System.out.println();
-
-        if (relFlag) {
+        else if(goldRelFlag && !predRelFlag){
+            complete[3]=1; //False Negative
+            partial[3]=1; //False Negative
+        }
+        else if(!goldRelFlag && predRelFlag){
+            complete[2]=1; //False Positive
+            partial[2]=1; //False Positive
+        }
+        //goldRelFlag==true && predRelFlag==true
+        else {
             completeFlag = true;
             partialFlag = false;
             for (int i = 0; i < gold.size(); i++) {
-                if ((gold.get(i).equals("B-R") || gold.get(i).equals("I-R")) && !gold.get(i).equals(pred.get(i))) {
+                if (!gold.get(i).equals(pred.get(i))) {
                     completeFlag = false;
-                    //System.out.println("Mis-Match found at:" + i);
                     break;
                 }
             }
             for (int i = 0; i < gold.size(); i++) {
-                if ( (gold.get(i).equals("B-R") || gold.get(i).equals("I-R")) && gold.get(i).equals(pred.get(i))) {
+                if ((gold.get(i).equals("B-R") || gold.get(i).equals("I-R")) && gold.get(i).equals(pred.get(i))) {
                     partialFlag = true;
-                    //System.out.println("Match found at:" + i);
+                    break;
+                }
+                if (completeFlag) {
+                    complete[0] = 1; //True Positive
+                } else {
+                    complete[2] = 1; //False Positive
+                }
+                if (partialFlag) {
+                    partial[0] = 1; //True Positive
+                } else {
+                    partial[2] = 1; //False Positive
                 }
             }
         }
-        else {
-            completeFlag = true;
-            partialFlag = true;
-            for (int i = 0; i < gold.size(); i++) {
-                if (!gold.get(i).equals(pred.get(i))) {
-                    completeFlag = false;
-                    partialFlag = false;
-                }
-            }
-        }
-        System.out.println("COMPLETE:"+completeFlag+" PARTIAL:"+partialFlag);
-
-        if(relFlag){
-            if(completeFlag){
-                complete[0]=1;
-            }
-            else{
-                complete[2]=1;
-            }
-            if(partialFlag){
-                partial[0]=1;
-            }
-            else{
-                partial[2]=1;
-            }
-        }
-        else{
-            if(completeFlag){
-                complete[1]=1;
-            }
-            else{
-                complete[3]=1;
-            }
-            if(partialFlag){
-                partial[1]=1;
-            }
-            else{
-                partial[3]=1;
-            }
-        }
-        System.out.print("COMPLETE OVERLAP ARRAY:");
-        for(int i=0; i<complete.length; i++){
-            System.out.print(complete[i]+" ");
-        }
-        System.out.print("\nPARTIAL OVERLAP ARRAY:");
-        for(int i=0; i<complete.length; i++){
-            System.out.print(partial[i]+" ");
-        }
-        System.out.println("\n\n");
-
 
     }
 }
