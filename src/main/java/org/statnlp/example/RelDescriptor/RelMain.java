@@ -36,7 +36,7 @@ public class RelMain {
         NetworkConfig.PARALLEL_FEATURE_EXTRACTION = true;
         NetworkConfig.AVOID_DUPLICATE_FEATURES = true;
         Evaluator evaluator = new Evaluator();
-        int i= oneFile ? fileId :  1;
+        int i= oneFile ? fileId :  0;
         
         Random rand = new Random(randomSeed);
         Instance[] allInstances =readData(dataFile, true, dataNum);

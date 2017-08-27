@@ -46,7 +46,7 @@ public class RelFeatureManager extends FeatureManager {
         fs.add(_param_g.toFeature(network, FeatType.unigram.name()+"-ph-1", tag, lPhrase));
         fs.add(_param_g.toFeature(network, FeatType.bigram.name()+"-w-10", tag, lw+" "+w));
         fs.add(_param_g.toFeature(network, FeatType.bigram.name()+"-p-10", tag, lPOS+" "+POS));
-        fs.add(_param_g.toFeature(network, FeatType.unigram.name()+"-ph-10", tag, lPhrase+" "+phrase));
+        fs.add(_param_g.toFeature(network, FeatType.bigram.name()+"-ph-10", tag, lPhrase+" "+phrase));
 
         String llw=pos-2>=0 ? wts.get(pos-2).getForm():"START-W"+(pos-2);
         String llPOS=pos-2>=0 ? wts.get(pos-2).getTag():"START-PO"+(pos-2);
