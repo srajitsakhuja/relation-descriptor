@@ -25,8 +25,8 @@ public class RelFeatureManager extends FeatureManager {
         if(RelNetworkCompiler.NodeType.values()[paArr[2]]== RelNetworkCompiler.NodeType.leaf || RelNetworkCompiler.NodeType.values()[paArr[2]]== RelNetworkCompiler.NodeType.root){
             return FeatureArray.EMPTY;
         }
-        int pos=paArr[0];
-        String tag=paArr[1]+"";
+        int pos = paArr[0];
+        String tag = paArr[1]+"";
         List<WordToken> wts=inst.getInput().sent;
         List<Integer> fs=new ArrayList<Integer>();
         String w=wts.get(pos).getForm();
@@ -141,14 +141,14 @@ public class RelFeatureManager extends FeatureManager {
                 String arg1PathTags="";
                 if(relStart>arg1Idx){
                     for(int i=arg1Idx+1; i<relStart; i++){
-                        arg1PathWords=arg1PathWords+wts.get(i).getForm()+" ";
-                        arg1PathTags=arg1PathTags+wts.get(i).getTag()+" ";
+                        arg1PathWords += wts.get(i).getForm()+" ";
+                        arg1PathTags += wts.get(i).getTag()+" ";
                     }
                 }
                 else{
                     for(int i=relEnd+1; i<arg1Idx; i++){
-                        arg1PathWords=arg1PathTags+wts.get(i).getForm()+" ";
-                        arg1PathTags=arg1PathTags+wts.get(i).getTag()+" ";
+                        arg1PathWords += wts.get(i).getForm()+" ";
+                        arg1PathTags += wts.get(i).getTag()+" ";
                     }
                 }
 
@@ -156,14 +156,14 @@ public class RelFeatureManager extends FeatureManager {
                 String arg2PathTags="";
                 if(relStart>arg2Idx){
                     for(int i=arg2Idx+1; i<relStart; i++){
-                        arg2PathWords=arg1PathWords+wts.get(i).getForm()+" ";
-                        arg2PathTags=arg2PathTags+wts.get(i).getTag();
+                        arg2PathWords += wts.get(i).getForm()+" ";
+                        arg2PathTags += wts.get(i).getTag();
                     }
                 }
                 else{
                     for(int i=relEnd+1; i<arg2Idx; i++){
-                        arg2PathWords=arg1PathWords+wts.get(i).getForm()+" ";
-                        arg2PathTags=arg2PathTags+wts.get(i).getTag();
+                        arg2PathWords += wts.get(i).getForm()+" ";
+                        arg2PathTags += wts.get(i).getTag();
                     }
                 }
                 String arg12PathWords="";
@@ -177,8 +177,8 @@ public class RelFeatureManager extends FeatureManager {
                 arg12End = Math.max(arg12End, relEnd);
                 
                 for(int i=arg12Start; i<=arg12End; i++){
-                    arg12PathWords=arg12PathWords+wts.get(i).getForm() + " ";
-                    arg12PathTags=arg12PathWords+wts.get(i).getTag() + " ";
+                    arg12PathWords += wts.get(i).getForm() + " ";
+                    arg12PathTags  += wts.get(i).getTag() + " ";
                 }
 
                 fs.add(_param_g.toFeature(network, FeatType.longPath+"-w-arg1", "REL", arg1PathWords));

@@ -3,7 +3,9 @@ package org.statnlp.example.RelDescriptor;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 
 import org.statnlp.commons.io.RAWF;
 import org.statnlp.commons.types.Instance;
@@ -16,13 +18,13 @@ import org.statnlp.hypergraph.NetworkModel;
 public class RelMain {
     private static int fileId;
     private static double[][] allMetrics = new double[2][4];
-    private static String trainFilePath="data/RelDataSet/nyt_train";
-    private static String testFilePath="data/RelDataSet/nyt_test";
-    private static int trainNum=200;
-    private static int testNum=1000;
+    private static String dataFile="data/RelDataSet/nyt.txt";
+    private static int dataNum=1000;
     private static int iterCount=1000;
     private static int threadCount=8;
     private static List<String> RELTags=new ArrayList<String>();
+    public static long randomSeed = 1234;
+    
     public static void main(String...args) throws IOException, InterruptedException{
         fileId=Integer.parseInt(args[0]);;
 //        trainNum=Integer.parseInt(args[1]);
@@ -36,19 +38,38 @@ public class RelMain {
         Evaluator evaluator = new Evaluator();
         int i= oneFile ? fileId :  1;
         
-        for(; i <= fileId; i++){
-            RelInstance[] trainInsts=readData(trainFilePath+i, true, trainNum);
+        Random rand = new Random(randomSeed);
+        Instance[] allInstances =readData(dataFile, true, dataNum);
+        allInstances = shuffle(allInstances, rand);
+        
+        Instance[][] splits = splitIntoKFolds(allInstances, fileId);
+        for(int j = 0; j < RELTags.size(); j++){
+            System.out.println("id: " + j + ", tag:" + RELTags.get(j));
+        }
+        
+        for(; i < fileId; i++){
+        	Instance[] testData = splits[fileId - i - 1];
+			for(Instance inst : testData) {
+				inst.setUnlabeled();
+			}
+			Instance[] trainData = new Instance[allInstances.length - testData.length];
+			int idx = 0;
+			for (int t = 0; t < fileId; t++) {
+				if (t == fileId - i - 1) continue;
+				for (int k = 0; k < splits[t].length; k++) {
+					splits[t][k].setLabeled();
+					splits[t][k].setPrediction(null);
+					trainData[idx++] = splits[t][k];
+				}
+			}
             GlobalNetworkParam gnp=new GlobalNetworkParam();
             RelFeatureManager fman=new RelFeatureManager(gnp);
             RelNetworkCompiler compiler=new RelNetworkCompiler(RELTags);
-            for(int j = 0; j < RELTags.size(); j++){
-                System.out.println("id: " + j + ", tag:" + RELTags.get(j));
-            }
+            
             NetworkModel model = DiscriminativeNetworkModel.create(fman, compiler);
-            model.train(trainInsts, iterCount);
+            model.train(trainData, iterCount);
 
-            RelInstance testInsts[] = readData(testFilePath+i, false, testNum);
-            Instance[] results = model.decode(testInsts);
+            Instance[] results = model.decode(testData);
             
             double[][] metrics = evaluator.evaluate(results);
             for (int m = 0; m < metrics.length; m++) {
@@ -69,7 +90,7 @@ public class RelMain {
         double avgCompRec = allMetrics[1][2] / limit;
         double avgCompF1 = allMetrics[1][3] / limit;
         System.out.printf("[Avg Partial] Acc.: %.3f\tPrec.: %.3f%%\tRec.: %.3f%%\tF1.: %.3f%%\n", avgPartialAcc, avgPartialPrec, avgPartialRec, avgPartialF1);
-        System.out.printf("[Avg Complete] Acc.: %.3f\tPrec.: %.3f%%\tRec.:%.3f%%\tF1.: %.3f%%\n", avgCompAcc, avgCompPrec, avgCompRec, avgCompF1);
+        System.out.printf("[Avg Complete] Acc.: %.3f\tPrec.: %.3f%%\tRec.: %.3f%%\tF1.: %.3f%%\n", avgCompAcc, avgCompPrec, avgCompRec, avgCompF1);
     }
 
     public static RelInstance[] readData(String fpath, boolean isTraining, int limit) throws IOException{
@@ -83,12 +104,13 @@ public class RelMain {
         List<String> relTags=new ArrayList<String>();
         int count=0;
         while((line=br.readLine())!=null){
+        	if (line.startsWith("NYT-") || line.startsWith("Wikipedia-"))  continue; //sentence ID number
             if(line.length()>0){
-                String[] line_split=line.split(" ");
-                String word=line_split[0];
-                String posTag=line_split[1];
-                String phraseTag=line_split[2];
-                String reltag=line_split[3];
+                String[] line_split=line.split("\\t");
+                String word=line_split[1];
+                String posTag=line_split[2];
+                String phraseTag=line_split[3];
+                String reltag=line_split[4];
                 String relTag=reltag;
 
                 WordToken wt=new WordToken(word, posTag);
@@ -134,4 +156,28 @@ public class RelMain {
         }*/
         return insts.toArray(new RelInstance[insts.size()]);
     }
+    
+    public static Instance[][] splitIntoKFolds(Instance[] allInsts, int k) {
+		Instance[][] splits = new Instance[k][];
+		int num = allInsts.length / k; 
+		for (int f = 0; f < k; f++) {
+			int currNum = f != k - 1 ? num : allInsts.length - (k - 1) * num;
+			splits[f] = new Instance[currNum];
+			for (int i = 0; i < currNum; i++) {
+				splits[f][i] = allInsts[f * num + i];
+			}
+			System.out.printf("[Info] Fold %d: %d\n", (f+1), splits[f].length);
+		}
+		return splits;
+	}
+    
+    public static Instance[] shuffle(Instance[] insts, Random rand) {
+		List<Instance> list = new ArrayList<>(insts.length);
+		for (int i = 0; i < insts.length; i++) {
+			list.add(insts[i]);
+		}
+		Collections.shuffle(list, rand);
+		System.out.println("[Info] shuffle insts:"+list.size());
+		return list.toArray(new Instance[list.size()]);
+	}
 }
