@@ -3,8 +3,6 @@ package org.statnlp.example.RelDescriptor;
 import java.util.List;
 
 public class Evaluator {
-    private List<String> gold;
-    private List<String> pred;
     private boolean partialFlag = false;
     private boolean completeFlag = false;
     private boolean goldRelFlag = false;

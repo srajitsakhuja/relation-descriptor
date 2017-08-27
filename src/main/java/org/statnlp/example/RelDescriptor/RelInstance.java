@@ -7,7 +7,9 @@ import java.util.List;
 
 public class RelInstance extends BaseInstance<RelInstance, InputData, List<String>> {
 
-    public RelInstance(int instanceId, double weight) {
+	private static final long serialVersionUID = -6997439888858971552L;
+
+	public RelInstance(int instanceId, double weight) {
         super(instanceId, weight);
     }
 

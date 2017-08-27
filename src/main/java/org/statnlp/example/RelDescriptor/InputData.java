@@ -1,9 +1,8 @@
 package org.statnlp.example.RelDescriptor;
 
-import org.statnlp.commons.types.Sentence;
-import org.statnlp.commons.types.WordToken;
-
 import java.util.List;
+
+import org.statnlp.commons.types.WordToken;
 
 public class InputData {
     public List<WordToken> sent;

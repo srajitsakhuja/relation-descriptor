@@ -1,23 +1,23 @@
 package org.statnlp.example.RelDescriptor;
 
-import com.fasterxml.jackson.databind.ser.Serializers;
-import jdk.internal.util.xml.impl.Input;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.statnlp.commons.types.Instance;
-import org.statnlp.commons.types.WordToken;
 import org.statnlp.example.base.BaseNetwork;
 import org.statnlp.hypergraph.LocalNetworkParam;
 import org.statnlp.hypergraph.Network;
 import org.statnlp.hypergraph.NetworkCompiler;
 import org.statnlp.hypergraph.NetworkIDMapper;
 
-import javax.xml.soap.Node;
-import java.util.*;
-
 public class RelNetworkCompiler extends NetworkCompiler {
-    private BaseNetwork generic;
-    protected List<String> relTags;
+	
+	private static final long serialVersionUID = -6299152945508391221L;
+	protected List<String> relTags;
     public Map<String, Integer> relTags2Id;
-    private int maxLen=150;
     static{
         NetworkIDMapper.setCapacity(new int[]{150, 50, 3, 100000});
     }
@@ -52,9 +52,6 @@ public class RelNetworkCompiler extends NetworkCompiler {
     public Network compileLabeled(int networkId, Instance inst, LocalNetworkParam param) {
         BaseNetwork.NetworkBuilder<BaseNetwork> builder=BaseNetwork.NetworkBuilder.builder();
         RelInstance myInst=(RelInstance)inst;
-        InputData input =myInst.getInput();
-        int arg1Idx=input.arg1Idx;
-        int arg2Idx=input.arg1Idx;
         List<String> output=myInst.getOutput();
         int left=myInst.size(), right=myInst.size();
         String prevTag="O";
@@ -87,33 +84,14 @@ public class RelNetworkCompiler extends NetworkCompiler {
         BaseNetwork network=builder.build(networkId, inst, param, this);
         return network;
     }
-    /*public Network compileLabeled(int networkId, Instance inst, LocalNetworkParam param) {
-        BaseNetwork.NetworkBuilder<BaseNetwork> builder=BaseNetwork.NetworkBuilder.builder();
-        RelInstance myinst=(RelInstance)inst;
-
-        long leaf=toNode_leaf();
-        builder.addNode(leaf);
-        long child=leaf;
-        int i;
-        for(i=0; i<inst.size(); i++){
-            List<String> output=myinst.getOutput();
-            long node=toNode_tag(i, relTags2Id.get(output.get(i)));
-            builder.addNode(node);
-            builder.addEdge(node, new long[]{child});
-            child=node;
-        }
-        long root=toNode_root(i+1);
-        builder.addNode(root);
-        builder.addEdge(root,new long[]{child});
-        BaseNetwork network=builder.build(networkId, inst, param, this);
-        return network;
-    }*/
+    
     private boolean covers(int argIdx, int left, int right ){
         if(argIdx>=left && argIdx<=right){
             return true;
         }
         return false;
     }
+    
     @Override
     public Network compileUnlabeled(int networkId, Instance inst, LocalNetworkParam param) {
 
@@ -173,39 +151,7 @@ public class RelNetworkCompiler extends NetworkCompiler {
         BaseNetwork unlabelledNetwork=builder.build(networkId, inst, param, this);
         return unlabelledNetwork;
     }
-    /*public Network compileUnlabeled(int networkId, Instance inst, LocalNetworkParam param) {
-        long[] nodes=this.generic.getAllNodes();
-        int children[][][]=this.generic.getAllChildren();
-        long root=toNode_root(inst.size());
-        int rootIdx= Arrays.binarySearch(nodes, root);
-        BaseNetwork unlabelledNetwork=BaseNetwork.NetworkBuilder.quickBuild(networkId, inst, nodes, children, rootIdx+1, param, this);
-        return unlabelledNetwork;
-    }
-
-    private void buildGenericNetwork(){
-        BaseNetwork.NetworkBuilder<BaseNetwork> builder=BaseNetwork.NetworkBuilder.builder();
-        long leaf=toNode_leaf();
-        builder.addNode(leaf);
-        long[] children={leaf};
-        for(int i=0; i<this.maxLen; i++){
-            long[] currentNodes=new long[relTags.size()];
-            for(int j=0; j<this.relTags.size(); j++){
-                long node=toNode_tag(i,j);
-                builder.addNode(node);
-                currentNodes[j]=node;
-                for(long child: children){
-                    builder.addEdge(node, new long[]{child});
-                }
-            }
-            children=currentNodes;
-            long root=toNode_root(i+1);
-            builder.addNode(root);
-            for(long child:children){
-                builder.addEdge(root,new long[]{child});
-            }
-        }
-        this.generic=builder.buildRudimentaryNetwork();
-    }*/
+    
     @Override
     public Instance decompile(Network network) {
         BaseNetwork unlablledNetwork=(BaseNetwork)network;
