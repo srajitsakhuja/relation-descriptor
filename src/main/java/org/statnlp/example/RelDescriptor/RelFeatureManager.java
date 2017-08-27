@@ -1,17 +1,17 @@
 package org.statnlp.example.RelDescriptor;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.statnlp.commons.types.WordToken;
 import org.statnlp.hypergraph.FeatureArray;
 import org.statnlp.hypergraph.FeatureManager;
 import org.statnlp.hypergraph.GlobalNetworkParam;
 import org.statnlp.hypergraph.Network;
-import scala.Int;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class RelFeatureManager extends FeatureManager {
-    public RelFeatureManager(GlobalNetworkParam param_g) {
+	private static final long serialVersionUID = -7942449721143200130L;
+	public RelFeatureManager(GlobalNetworkParam param_g) {
 
         super(param_g);
     }
@@ -32,8 +32,6 @@ public class RelFeatureManager extends FeatureManager {
         String w=wts.get(pos).getForm();
         String POS=wts.get(pos).getTag();
         String phrase=wts.get(pos).getPhraseTag();
-        int uni=0;
-        int bi=0;
         fs.add(_param_g.toFeature(network, FeatType.unigram.name()+"-w0", tag,w));
         fs.add(_param_g.toFeature(network, FeatType.unigram.name()+"-po0", tag, POS));
         fs.add(_param_g.toFeature(network, FeatType.unigram.name()+"-ph0", tag, phrase));
@@ -116,30 +114,27 @@ public class RelFeatureManager extends FeatureManager {
             String longTagr="";
             boolean relFound=false;
             int relStart=0;
-            int relEnd=wts.size()-1;
+            int relEnd= wts.size()-1;
             for(int i=0; i<wordTokens.size(); i++) {
                 if (!relFound && tags.get(i) == 1) {
                     relStart = i;
-                    if (i > 0) {
-                        longWordl = wts.get(i - 1).getForm();
-                        longTagl = wts.get(i - 1).getTag();
-                    }
                     relFound = true;
                 }
                 if (relFound && tags.get(i) == 0) {
                     relEnd = i - 1;
-                    longWordr = wts.get(i).getForm();
-                    longTagr = wts.get(i).getTag();
-
                 }
             }
 
             if(relFound) {
                 //Contextual Features
-//                fs.add(_param_g.toFeature(network, FeatType.longContext.name()+"-wl", "REL" , longWordl));
-//                fs.add(_param_g.toFeature(network, FeatType.longContext.name()+"-wr", "REL" , longWordr));
-//                fs.add(_param_g.toFeature(network, FeatType.longContext.name()+"-tl", "REL" , longTagl));
-//                fs.add(_param_g.toFeature(network, FeatType.longContext.name()+"-tl", "REL" , longTagr));
+            	longWordl = relStart - 1 >= 0 ? wts.get(relStart - 1).getForm() : "START-W";
+                longTagl = relStart - 1 >= 0 ? wts.get(relStart - 1).getTag() : "START-PO";
+                longWordr = relEnd + 1< wts.size() ?  wts.get(relEnd + 1).getForm() : "END-W";
+                longTagr = relEnd + 1 < wts.size()  ? wts.get(relEnd + 1).getTag() : "END-PO";
+                fs.add(_param_g.toFeature(network, FeatType.longContext.name()+"-wl", "REL" , longWordl));
+                fs.add(_param_g.toFeature(network, FeatType.longContext.name()+"-wr", "REL" , longWordr));
+                fs.add(_param_g.toFeature(network, FeatType.longContext.name()+"-tl", "REL" , longTagl));
+                fs.add(_param_g.toFeature(network, FeatType.longContext.name()+"-tl", "REL" , longTagr));
 
                 //Path-Based Features
                 String arg1PathWords="";
@@ -151,7 +146,7 @@ public class RelFeatureManager extends FeatureManager {
                     }
                 }
                 else{
-                    for(int i=relStart+1; i<arg1Idx; i++){
+                    for(int i=relEnd+1; i<arg1Idx; i++){
                         arg1PathWords=arg1PathTags+wts.get(i).getForm()+" ";
                         arg1PathTags=arg1PathTags+wts.get(i).getTag()+" ";
                     }
@@ -166,39 +161,24 @@ public class RelFeatureManager extends FeatureManager {
                     }
                 }
                 else{
-                    for(int i=relStart+1; i<arg2Idx; i++){
+                    for(int i=relEnd+1; i<arg2Idx; i++){
                         arg2PathWords=arg1PathWords+wts.get(i).getForm()+" ";
                         arg2PathTags=arg2PathTags+wts.get(i).getTag();
                     }
                 }
                 String arg12PathWords="";
                 String arg12PathTags="";
-                int arg12Start=-1;
-                int arg12End=-1;
-                if(arg1Idx<arg2Idx){
-                    if(relStart<arg1Idx){
-                        arg12Start=relStart;
-                        arg12End=arg2Idx;
-                    }
-                    else{
-                        arg12Start=arg1Idx;
-                        arg12End=relStart>arg2Idx?relStart:arg2Idx;
-                    }
-                }
-                else{
-                    if(relStart<arg2Idx){
-                        arg12Start=relStart;
-                        arg12End=arg1Idx;
-                    }
-                    else{
-                        arg12Start=arg2Idx;
-                        arg12End=relStart>arg1Idx?relStart:arg1Idx;
-                    }
-                }
-
+                
+                
+                int arg12Start=Math.min(arg1Idx, arg2Idx);
+                arg12Start = Math.min(arg12Start, relStart);
+                
+                int arg12End=Math.max(arg1Idx, arg2Idx);
+                arg12End = Math.max(arg12End, relEnd);
+                
                 for(int i=arg12Start; i<=arg12End; i++){
-                    arg12PathWords=arg12PathWords+wts.get(i).getForm();
-                    arg12PathTags=arg12PathWords+wts.get(i).getTag();
+                    arg12PathWords=arg12PathWords+wts.get(i).getForm() + " ";
+                    arg12PathTags=arg12PathWords+wts.get(i).getTag() + " ";
                 }
 
                 fs.add(_param_g.toFeature(network, FeatType.longPath+"-w-arg1", "REL", arg1PathWords));

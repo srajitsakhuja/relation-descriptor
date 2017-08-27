@@ -1,20 +1,17 @@
 package org.statnlp.example.RelDescriptor;
 
-import jdk.internal.util.xml.impl.Input;
-import org.statnlp.commons.io.RAWF;
-import org.statnlp.commons.types.Instance;
-import org.statnlp.commons.types.WordToken;
-import org.statnlp.example.POSTagging.POSFeatureManager;
-import org.statnlp.example.POSTagging.POSNetworkCompiler;
-import org.statnlp.hypergraph.DiscriminativeNetworkModel;
-import org.statnlp.hypergraph.GlobalNetworkParam;
-import org.statnlp.hypergraph.NetworkConfig;
-import org.statnlp.hypergraph.NetworkModel;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.statnlp.commons.io.RAWF;
+import org.statnlp.commons.types.Instance;
+import org.statnlp.commons.types.WordToken;
+import org.statnlp.hypergraph.DiscriminativeNetworkModel;
+import org.statnlp.hypergraph.GlobalNetworkParam;
+import org.statnlp.hypergraph.NetworkConfig;
+import org.statnlp.hypergraph.NetworkModel;
 
 public class RelMain {
     private static int fileId;
@@ -32,27 +29,28 @@ public class RelMain {
     private static int threadCount=8;
     private static List<String> RELTags=new ArrayList<String>();
     public static void main(String...args) throws IOException, InterruptedException{
-        fileId=Integer.parseInt(args[0]);
+        fileId=Integer.parseInt(args[0]);;
 //        trainNum=Integer.parseInt(args[1]);
 //        testNum=Integer.parseInt(args[2]);
-        threadCount=Integer.parseInt(args[1]);
+        threadCount=Integer.parseInt(args[1]);;
         boolean oneFile=Boolean.parseBoolean(args[2]);
         NetworkConfig.L2_REGULARIZATION_CONSTANT=Double.parseDouble(args[3]);
-
+        NetworkConfig.NUM_THREADS=threadCount;
+        NetworkConfig.PARALLEL_FEATURE_EXTRACTION = true;
+        NetworkConfig.AVOID_DUPLICATE_FEATURES = true;
+        
         int i=1;
         if(oneFile){
             i=fileId;
         }
         for(; i<=fileId; i++){
             RelInstance[] trainInsts=readData(trainFilePath+i, true, trainNum);
-            NetworkConfig.NUM_THREADS=40;
-            NetworkConfig.PARALLEL_FEATURE_EXTRACTION = true;
-            NetworkConfig.AVOID_DUPLICATE_FEATURES = true;
+           
             GlobalNetworkParam gnp=new GlobalNetworkParam();
             RelFeatureManager fman=new RelFeatureManager(gnp);
             RelNetworkCompiler compiler=new RelNetworkCompiler(RELTags);
             for(int j=0; j<RELTags.size(); j++){
-                System.out.println(RELTags.get(j));
+                System.out.println("id: " + j + ", tag:" + RELTags.get(j));
             }
             NetworkModel model= DiscriminativeNetworkModel.create(fman, compiler);
             model.train(trainInsts, iterCount);
