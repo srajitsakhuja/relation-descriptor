@@ -1,8 +1,8 @@
-package org.statnlp.example.RelDescriptor;
+package org.statnlp.example.RelationDescriptor;
 
 import java.util.List;
 
-public class Evaluator {
+public class RelationEvaluator {
     private boolean partialFlag = false;
     private boolean completeFlag = false;
     private boolean goldRelFlag = false;
@@ -10,7 +10,7 @@ public class Evaluator {
     public int complete[]={0,0,0,0};
     public int partial[]={0,0,0,0};
 
-    Evaluator(List<String> gold, List<String> pred) {
+    RelationEvaluator(List<String> gold, List<String> pred) {
         for(int i=0; i<gold.size(); i++){
             if(gold.get(i).equals("B-R") || gold.get(i).equals("I-R")) {
                 goldRelFlag = true;
@@ -62,8 +62,6 @@ public class Evaluator {
             } else {
                 partial[2] = 1; //False Positive
             }
-            }
         }
-
+    }
 }
-

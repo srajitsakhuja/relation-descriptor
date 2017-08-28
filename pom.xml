@@ -2,9 +2,9 @@
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.statnlp</groupId>
-    <artifactId>statnlp-core</artifactId>
-    <version>2017.1-SNAPSHOT</version>
-    <name>StatNLP Core Components</name>
+    <artifactId>srajit-descriptor</artifactId>
+    <version>Descriptor</version>
+    <name>Srajit-Relation-Descriptor</name>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>

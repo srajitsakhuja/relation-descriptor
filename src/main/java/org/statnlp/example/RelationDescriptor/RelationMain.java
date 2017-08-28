@@ -1,19 +1,20 @@
-package org.statnlp.example.RelDescriptor;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+package org.statnlp.example.RelationDescriptor;
 
 import org.statnlp.commons.io.RAWF;
 import org.statnlp.commons.types.Instance;
+import org.statnlp.commons.types.Word;
 import org.statnlp.commons.types.WordToken;
 import org.statnlp.hypergraph.DiscriminativeNetworkModel;
 import org.statnlp.hypergraph.GlobalNetworkParam;
 import org.statnlp.hypergraph.NetworkConfig;
 import org.statnlp.hypergraph.NetworkModel;
 
-public class RelMain {
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+public class RelationMain {
     private static int fileId;
     private static List<String> partialAccuracies=new ArrayList<>();
     private static List<String> completeAccuracies=new ArrayList<>();
@@ -30,42 +31,40 @@ public class RelMain {
     private static List<String> RELTags=new ArrayList<String>();
     public static void main(String...args) throws IOException, InterruptedException{
         fileId=Integer.parseInt(args[0]);;
-//        trainNum=Integer.parseInt(args[1]);
-//        testNum=Integer.parseInt(args[2]);
         threadCount=Integer.parseInt(args[1]);;
         boolean oneFile=Boolean.parseBoolean(args[2]);
         NetworkConfig.L2_REGULARIZATION_CONSTANT=Double.parseDouble(args[3]);
         NetworkConfig.NUM_THREADS=threadCount;
         NetworkConfig.PARALLEL_FEATURE_EXTRACTION = true;
         NetworkConfig.AVOID_DUPLICATE_FEATURES = true;
-        
+
         int i=1;
         if(oneFile){
             i=fileId;
         }
         for(; i<=fileId; i++){
-            RelInstance[] trainInsts=readData(trainFilePath+i, true, trainNum);
-           
+            RelationInstance[] trainInsts=readData(trainFilePath+i, true);
+
             GlobalNetworkParam gnp=new GlobalNetworkParam();
-            RelFeatureManager fman=new RelFeatureManager(gnp);
-            RelNetworkCompiler compiler=new RelNetworkCompiler(RELTags);
+            RelationFeatureManager fman=new RelationFeatureManager(gnp);
+            RelationNetworkCompiler compiler=new RelationNetworkCompiler(RELTags);
             for(int j=0; j<RELTags.size(); j++){
                 System.out.println("id: " + j + ", tag:" + RELTags.get(j));
             }
             NetworkModel model= DiscriminativeNetworkModel.create(fman, compiler);
             model.train(trainInsts, iterCount);
 
-            RelInstance testInsts[]=readData(testFilePath+i, false, testNum);
+            RelationInstance testInsts[]=readData(testFilePath+i, false);
             Instance[] results=model.decode(testInsts);
 
 
             int partial[]={0,0,0,0};
             int complete[]={0,0,0,0};
             for(Instance res:results){
-                RelInstance inst=(RelInstance) res;
+                RelationInstance inst=(RelationInstance) res;
                 List<String> gold=inst.getOutput();
                 List<String> pred=inst.getPrediction();
-                Evaluator eval=new Evaluator(gold,pred);
+                RelationEvaluator eval=new RelationEvaluator(gold,pred);
                 for(int k=0; k<complete.length; k++){
                     complete[k]+=eval.complete[k];
                     partial[k]+=eval.partial[k];
@@ -81,8 +80,8 @@ public class RelMain {
             partialAccuracies.add(paccuracy+"");
 
             int completeTP=complete[0];int completeTN=complete[1];int completeFP=complete[2]; int completeFN=complete[3];
-            double cprecision=(completeTP*100.0)/(partialTP+partialFP);
-            double crecall=(completeTP*100.0)/(completeTP+completeFP);
+            double cprecision=(completeTP*100.0)/(completeTP+completeFP);
+            double crecall=(completeTP*100.0)/(completeTP+completeFN);
             double caccuracy=(completeTP+completeTN)*100.0/(completeTP+completeTN+completeFP+completeFN);
             completePrecs.add(cprecision+"");
             completeRecs.add(crecall+"");
@@ -126,10 +125,11 @@ public class RelMain {
         System.out.println(completeAccuracyAverage+"\t"+completePrecAverage+"\t"+completeRecAverage+"\n\n");
     }
 
-    public static RelInstance[] readData(String fpath, boolean isTraining, int limit) throws IOException{
-        List<RelInstance> insts=new ArrayList<RelInstance>();
+
+    public static RelationInstance[] readData(String fname, boolean isTraining) throws IOException{
+        List<RelationInstance> insts=new ArrayList<RelationInstance>();
         String line=null;
-        BufferedReader br= RAWF.reader(fpath);
+        BufferedReader br= RAWF.reader(fname);
         List<WordToken> wts=new ArrayList<WordToken>();
         int index=0;
         int arg1Idx=-1;
@@ -162,10 +162,9 @@ public class RelMain {
             }
             else{
                 count++;
-                if(count>limit){break;}
-                InputData input=new InputData(wts, arg1Idx, arg2Idx);
+                CandidatePair input=new CandidatePair(wts, arg1Idx, arg2Idx);
                 //System.out.println("COUNT"+count);
-                RelInstance inst=new RelInstance(count, 1.0, input, relTags);
+                RelationInstance inst=new RelationInstance(count, 1.0, input, relTags);
                 if(isTraining){
                     inst.setLabeled();
                 }
@@ -186,6 +185,6 @@ public class RelMain {
         /*for(int i=0; i<insts.size(); i++){
             insts.get(i).toString();
         }*/
-        return insts.toArray(new RelInstance[insts.size()]);
+        return insts.toArray(new RelationInstance[insts.size()]);
     }
 }
