@@ -28,8 +28,7 @@ public class RelationFeatureManager extends FeatureManager {
         String currTag=paArr[1]+"";
         int pos=paArr[0];
         List<WordToken> wt=inst.getInput().wts;
-        int arg1Idx=inst.getInput().arg1Idx;
-        int arg2Idx=inst.getInput().arg2Idx;
+
 
         //LC-Features
         String w=wt.get(pos).getForm();
@@ -119,135 +118,112 @@ public class RelationFeatureManager extends FeatureManager {
 
         //LONG-RANGE FEATURES
         if(pos==inst.size()-1){
-            List<Integer> relTags=new ArrayList<Integer>();
-            int currIdx=parent_k;
-            int[] currArr=network.getNodeArray(currIdx);
-            relTags.add(0, currArr[1]);
-            currIdx=children_k[0];
-            currArr=network.getNodeArray(currIdx);
+            int arg1Idx=inst.getInput().arg1Idx;
+            int arg2Idx=inst.getInput().arg2Idx;
+            List<WordToken> wordTokens=new ArrayList<WordToken>();
+            List<Integer> tags=new ArrayList<Integer>();
+
+            int position=pos;
+            int[] currArr=network.getNodeArray(parent_k);
+
+            wordTokens.add(0,wt.get(position));
+            tags.add(0, currArr[1]);
+
+
+            int currIdx=children_k[0];
             while(true){
-                if(currArr[2]== RelationNetworkCompiler.NodeType.leaf.ordinal()){
+                currArr=network.getNodeArray(currIdx);
+                if(currArr[2]!= RelationNetworkCompiler.NodeType.tag.ordinal()){
                     break;
                 }
-                relTags.add(0, currArr[1]);
+                position=network.getNodeArray(currIdx)[0];
+                tags.add(0, currArr[1]);
+                wordTokens.add(0, wt.get(position));
                 currIdx=network.getChildren(currIdx)[0][0];
-                currArr=network.getNodeArray(currIdx);
             }
-            int relStart=-1;
-            int relEnd=-1;
+            String longWordl="";
+            String longTagl="";
+            String longWordr="";
+            String longTagr="";
             boolean relFound=false;
-            int prev=0;
-
-            for(int i=0; i<inst.size(); i++){
-                if(relTags.get(i)!=0){
-                    relFound=true;
-                    relStart=i;
+            int relStart=0;
+            int relEnd= wt.size()-1;
+            for(int i=0; i<wordTokens.size(); i++) {
+                if (!relFound && tags.get(i) == 1) {
+                    relStart = i;
+                    relFound = true;
                 }
-                if(relTags.get(i)==0 && prev!=0){
-                    relEnd=i-1;
+                if (relFound && tags.get(i) == 0) {
+                    relEnd = i - 1;
                 }
-                prev=relTags.get(i);
             }
 
+            if(relFound) {
+                //Contextual Features
+                longWordl = relStart - 1 >= 0 ? wt.get(relStart - 1).getForm() : "START-W";
+                longTagl = relStart - 1 >= 0 ? wt.get(relStart - 1).getTag() : "START-PO";
+                longWordr = relEnd + 1< wt.size() ?  wt.get(relEnd + 1).getForm() : "END-W";
+                longTagr = relEnd + 1 < wt.size()  ? wt.get(relEnd + 1).getTag() : "END-PO";
+                fs.add(_param_g.toFeature(network, FeatType.longContext.name()+"-wl", "REL" , longWordl));
+                fs.add(_param_g.toFeature(network, FeatType.longContext.name()+"-wr", "REL" , longWordr));
+                fs.add(_param_g.toFeature(network, FeatType.longContext.name()+"-tl", "REL" , longTagl));
+                fs.add(_param_g.toFeature(network, FeatType.longContext.name()+"-tl", "REL" , longTagr));
 
-            if(relFound){
-                if(relEnd==-1){relEnd=inst.size()-1;}
-                //CONTEXT-FEATURES
-                String longWl=relStart>0?wt.get(relStart-1).getForm():"START-W";
-                String longPOl=relStart>0?wt.get(relStart-1).getTag():"START-P";
-                String longWr=(relEnd+1)<inst.size()?wt.get(relEnd+1).getForm():"END-W";
-                String longPOr=(relEnd+1)<inst.size()?wt.get(relEnd+1).getTag():"END-P";
-                fs.add(_param_g.toFeature(network, FeatType.longContext+"-w-1", "REL", longWl));
-                fs.add(_param_g.toFeature(network, FeatType.longContext+"-po-1", "REL", longPOl));
-                fs.add(_param_g.toFeature(network, FeatType.longContext+"-w+1", "REL", longWr));
-                fs.add(_param_g.toFeature(network, FeatType.longContext+"-po+1", "REL", longPOr));
-
-                //PATH BASED FEATURES
-                String wPath1=""; //words between the rel and arg1
-                String wPath2=""; //words between the rel and arg2
-                String wPath3=""; //words containing rel, arg1 and arg2
-                String poPath1=""; //POStags between the rel and arg1
-                String poPath2=""; //POStags between the rel and arg2
-                String poPath3=""; //POStags containing rel, arg1 and arg2
-
-                int pathStart=-1;
-                int pathEnd=-1;
-
-                if(arg1Idx>relEnd){
-                    pathStart=relEnd+1;
-                    pathEnd=arg1Idx-1;
-                }
-                else{
-                    pathStart=arg1Idx+1;
-                    pathEnd=relStart-1;
-                }
-                for(int i=pathStart; i<=pathEnd; i++){
-                    wPath1=wPath1+wt.get(i).getForm();
-                    poPath1=poPath1+wt.get(i).getTag();
-                }
-
-                if(arg2Idx>relEnd){
-                    pathStart=relEnd+1;
-                    pathEnd=arg2Idx-1;
-                }
-                else{
-                    pathStart=arg2Idx+1;
-                    pathEnd=relStart-1;
-                }
-                for(int i=pathStart; i<=pathEnd; i++){
-                    wPath2=wPath2+wt.get(i).getForm();
-                    poPath2=poPath2+wt.get(i).getTag();
-                }
-
-                if(arg1Idx>arg2Idx){
-                    if(relStart<arg1Idx){
-                        pathStart=relStart;
-                        pathEnd=arg2Idx;
-                    }
-                    else{
-                        pathStart=arg1Idx;
-                        if(relStart<arg2Idx){
-                            pathEnd=arg2Idx;
-                        }
-                        else{
-                            pathEnd=relEnd;
-                        }
+                //Path-Based Features
+                String arg1PathWords="";
+                String arg1PathTags="";
+                if(relStart>arg1Idx){
+                    for(int i=arg1Idx+1; i<relStart; i++){
+                        arg1PathWords=arg1PathWords+wt.get(i).getForm()+" ";
+                        arg1PathTags=arg1PathTags+wt.get(i).getTag()+" ";
                     }
                 }
                 else{
-                    if(relStart<arg2Idx){
-                        pathStart=relStart;
-                        pathEnd=arg1Idx;
-                    }
-                    else{
-                        pathStart=arg2Idx;
-                        if(relStart<arg1Idx){
-                            pathEnd=arg1Idx;
-                        }
-                        else{
-                            pathEnd=relEnd;
-                        }
+                    for(int i=relEnd+1; i<arg1Idx; i++){
+                        arg1PathWords=arg1PathTags+wt.get(i).getForm()+" ";
+                        arg1PathTags=arg1PathTags+wt.get(i).getTag()+" ";
                     }
                 }
 
-                for(int i=pathStart; i<=pathEnd; i++){
-                    wPath3=wPath3+wt.get(i).getForm();
-                    poPath3=poPath3+wt.get(i).getTag();
+                String arg2PathWords="";
+                String arg2PathTags="";
+                if(relStart>arg2Idx){
+                    for(int i=arg2Idx+1; i<relStart; i++){
+                        arg2PathWords=arg1PathWords+wt.get(i).getForm()+" ";
+                        arg2PathTags=arg2PathTags+wt.get(i).getTag();
+                    }
+                }
+                else{
+                    for(int i=relEnd+1; i<arg2Idx; i++){
+                        arg2PathWords=arg1PathWords+wt.get(i).getForm()+" ";
+                        arg2PathTags=arg2PathTags+wt.get(i).getTag();
+                    }
+                }
+                String arg12PathWords="";
+                String arg12PathTags="";
+
+
+                int arg12Start=Math.min(arg1Idx, arg2Idx);
+                arg12Start = Math.min(arg12Start, relStart);
+
+                int arg12End=Math.max(arg1Idx, arg2Idx);
+                arg12End = Math.max(arg12End, relEnd);
+
+                for(int i=arg12Start; i<=arg12End; i++){
+                    arg12PathWords=arg12PathWords+wt.get(i).getForm() + " ";
+                    arg12PathTags=arg12PathTags+wt.get(i).getTag() + " ";
                 }
 
-                fs.add(_param_g.toFeature(network, FeatType.longPath+"-w-arg1", "REL", wPath1));
-                fs.add(_param_g.toFeature(network, FeatType.longPath+"-w-arg2", "REL", wPath2));
-                fs.add(_param_g.toFeature(network, FeatType.longPath+"-w-arg12", "REL", wPath3));
-                fs.add(_param_g.toFeature(network, FeatType.longPath+"-po-arg1", "REL", poPath1));
-                fs.add(_param_g.toFeature(network, FeatType.longPath+"-po-arg2", "REL", poPath2));
-                fs.add(_param_g.toFeature(network, FeatType.longPath+"-po-arg12", "REL", poPath3));
-
+                fs.add(_param_g.toFeature(network, FeatType.longPath+"-w-arg1", "REL", arg1PathWords));
+                fs.add(_param_g.toFeature(network, FeatType.longPath+"-t-arg1", "REL", arg1PathTags));
+                fs.add(_param_g.toFeature(network, FeatType.longPath+"-w-arg2", "REL", arg2PathWords));
+                fs.add(_param_g.toFeature(network, FeatType.longPath+"-t-arg2", "REL", arg2PathTags));
+                fs.add(_param_g.toFeature(network, FeatType.longPath+"-w-arg12", "REL", arg12PathWords));
+                fs.add(_param_g.toFeature(network, FeatType.longPath+"-w-arg12", "REL", arg12PathTags));
 
 
             }
         }
-
-
 
         return this.createFeatureArray(network, fs);
     }
