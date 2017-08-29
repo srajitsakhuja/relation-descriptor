@@ -91,7 +91,30 @@ public class Preprocessor {
                     }
                 }
                 arg2End=spaces;
-
+                String bef="";
+                for(int i=0; i<arg1Start; i++){
+                    bef=bef+newLine.split(" ")[i]+" ";
+                }
+                String el1Compound=newLine.split(" ")[arg1Start];
+                for(int i=arg1Start+1; i<=arg1End; i++){
+                    el1Compound=el1Compound+"-"+newLine.split(" ")[i];
+                }
+                String bet=" ";
+                for(int i=arg1End+1; i<arg2Start; i++){
+                    bet=bet+newLine.split(" ")[i]+" ";
+                }
+                String el2Compound=newLine.split(" ")[arg2Start];
+                for(int i=arg2Start+1; i<=arg2End; i++){
+                    el2Compound=el2Compound+"-"+newLine.split(" ")[i];
+                }
+                String aft=" ";
+                for(int i=arg2End+1; i<newLine.split(" ").length; i++){
+                    aft=aft+newLine.split(" ")[i]+" ";
+                }
+                newLine=bef+el1Compound+bet+el2Compound+aft;
+                arg2Start=arg2Start-(arg1End-arg1Start);
+                arg1End=arg1Start;
+                arg2End=arg2Start;
                 lineArr=newLine.toCharArray();
 
                 for(int j=0; j<lineArr.length; j++){
@@ -107,31 +130,15 @@ public class Preprocessor {
                             if(arg1Start>=pos){
                                 arg1Start++;
                                 arg2Start++;
-                                arg1End++;
-                                arg2End++;
                             }
                             else{
-                                if(arg1End>pos){
-                                    arg1End++;
-                                    arg2Start++;
-                                    arg2End++;
-                                }
-                                else{
-                                    if(arg2Start>=pos){
-                                        arg2Start++;
-                                        arg2End++;
-                                    }
-                                    else{
-                                        if(arg2End>pos){
-                                            arg2End++;
-                                        }
-                                    }
-                                }
+                               if(arg2Start>=pos){
+                                   arg2Start++;
+                               }
                             }
                         }
                         if(lineArr[j-1]==' '){
                             if(j+1<lineArr.length && lineArr[j+1]!=' ') {
-
                                 String splt1=newLine.substring(0, j);
                                 String splt2=lineArr[j]+" ";
                                 String splt3=newLine.substring(j+1);
@@ -142,25 +149,10 @@ public class Preprocessor {
                                 if(arg1Start>=pos){
                                     arg1Start++;
                                     arg2Start++;
-                                    arg1End++;
-                                    arg2End++;
                                 }
                                 else{
-                                    if(arg1End>pos){
-                                        arg1End++;
+                                    if(arg2Start>=pos){
                                         arg2Start++;
-                                        arg2End++;
-                                    }
-                                    else{
-                                        if(arg2Start>=pos){
-                                            arg2Start++;
-                                            arg2End++;
-                                        }
-                                        else{
-                                            if(arg2End>pos){
-                                                arg2End++;
-                                            }
-                                        }
                                     }
                                 }
                             }
@@ -168,9 +160,10 @@ public class Preprocessor {
                         }
                     }
                 }
-
+                arg1End=arg1Start;
+                arg2End=arg2Start;
                 lines.add(newLine+"\n");
-                lines.add(arg1Start+":"+arg1End+"/"+arg2Start+":"+arg2End+"\n");
+                lines.add(arg1Start+"/"+arg2Start+"\n");
 
             }
             else{

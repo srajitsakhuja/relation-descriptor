@@ -26,7 +26,7 @@ public class LatentNetworkCompiler extends NetworkCompiler {
         return toNode(0,0, NodeType.leaf, 0);
     }
     public long toRootNode(int size){
-        return toNode(size-1, relTypes.size()*3, NodeType.root, size);
+        return toNode(size-1, relTags.size(), NodeType.root, size);
     }
     public long toTagNode(int pos, int tagId, int chainId){
         return toNode(pos, tagId, NodeType.tag, chainId);

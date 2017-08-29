@@ -13,14 +13,17 @@ import java.util.List;
 public class RelationLatentMain {
     private static String unprocessedFilePath="data/RelDataSet/sem-eval-task8.txt";
     private static String processedFilePath="data/RelDataSet/sem-eval-task8-processed.txt";
-    private static List<String> relTags=new ArrayList<String>();
+    private static List<String> relTypes=new ArrayList<String>();
 
 
     public static void main(String...args) throws IOException{
         //preprocessed file stored at processedFilePath
         //Preprocessor preprocessor=new Preprocessor(unprocessedFilePath, processedFilePath);
         RelationInstance[] insts=readData(processedFilePath);
+
+
         insts=posTagger(insts);
+      LatentNetworkCompiler networkCompiler=new LatentNetworkCompiler(relTypes);
     }
 
     private static RelationInstance[] posTagger(RelationInstance[] insts){
@@ -53,9 +56,7 @@ public class RelationLatentMain {
         int lnum=0;
         List<WordToken> wts=new ArrayList<WordToken>();
         int e1Start=-1;
-        int e1End=-1;
         int e2Start=-1;
-        int e2End=-1;
         int count=0;
         while((line=br.readLine())!=null){
             if(line.length()!=0){
@@ -67,18 +68,16 @@ public class RelationLatentMain {
                     }
                 }
                 else if(lnum%3==1){
-                    e1Start=Integer.parseInt(line.split("/")[0].split(":")[0]);
-                    e1End=Integer.parseInt(line.split("/")[0].split(":")[1]);
-                    e2Start=Integer.parseInt(line.split("/")[1].split(":")[0]);
-                    e2End=Integer.parseInt(line.split("/")[1].split(":")[1]);
+                    e1Start=Integer.parseInt(line.split("/")[0]);
+                    e2Start=Integer.parseInt(line.split("/")[1]);
                 }
                 else{
                     count++;
                     Output output=new Output(line, wts.size());
-                    if(!relTags.contains(output.relType)){
-                        relTags.add(output.relType);
+                    if(!relTypes.contains(output.relType)){
+                        relTypes.add(output.relType);
                     }
-                    Input input=new Input(e1Start, e1End, e2Start, e2End, wts);
+                    Input input=new Input(e1Start, e2Start, wts);
                     wts=new ArrayList<WordToken>();
                     RelationInstance inst=new RelationInstance(count, 1.0,input, output);
                     insts.add(inst);
