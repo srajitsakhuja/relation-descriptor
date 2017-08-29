@@ -47,5 +47,6 @@
 		<level name="Maven: org.freehep:freehep-graphicsio-pdf:2.1.3" value="project"/>
 		<level name="Maven: org.freehep:freehep-graphicsio-tests:2.1.3" value="project"/>
 		<level name="Maven: com.nebula2d:jnlua:1.0.4" value="project"/>
+		<level name="stanford-english-corenlp-2017-06-09-models" value="project"/>
 	</levels>
 </component>

@@ -25,13 +25,17 @@ public class RelFeatureManager extends FeatureManager {
         if(RelNetworkCompiler.NodeType.values()[paArr[2]]== RelNetworkCompiler.NodeType.leaf || RelNetworkCompiler.NodeType.values()[paArr[2]]== RelNetworkCompiler.NodeType.root){
             return FeatureArray.EMPTY;
         }
-        int pos = paArr[0];
-        String tag = paArr[1]+"";
+        int pos=paArr[0];
+        String tag=paArr[1]+"";
         List<WordToken> wts=inst.getInput().sent;
         List<Integer> fs=new ArrayList<Integer>();
         String w=wts.get(pos).getForm();
         String POS=wts.get(pos).getTag();
         String phrase=wts.get(pos).getPhraseTag();
+        int childIdx=children_k[0];
+        int[] childArr=network.getNodeArray(childIdx);
+        String prevTag=childArr[1]+"";
+        fs.add(_param_g.toFeature(network, FeatType.transition.name(), tag, prevTag));
         fs.add(_param_g.toFeature(network, FeatType.unigram.name()+"-w0", tag,w));
         fs.add(_param_g.toFeature(network, FeatType.unigram.name()+"-po0", tag, POS));
         fs.add(_param_g.toFeature(network, FeatType.unigram.name()+"-ph0", tag, phrase));
@@ -81,6 +85,38 @@ public class RelFeatureManager extends FeatureManager {
         fs.add(_param_g.toFeature(network, FeatType.bigram+"-w+1+2", tag, rrw+" "+rw));
         fs.add(_param_g.toFeature(network, FeatType.bigram+"-po+1+2", tag, rPOS+" "+rrPOS));
         fs.add(_param_g.toFeature(network, FeatType.bigram+"-ph+1+2", tag, rPhrase+" "+rrPhrase));
+
+
+        //first-order features
+        fs.add(_param_g.toFeature(network, FeatType.unigram.name()+"*w0", tag+" "+prevTag, w));
+        fs.add(_param_g.toFeature(network, FeatType.unigram.name()+"*w-1", tag+" "+prevTag, lw));
+        fs.add(_param_g.toFeature(network, FeatType.unigram.name()+"*w-2", tag+" "+prevTag, llw));
+        fs.add(_param_g.toFeature(network, FeatType.unigram.name()+"*w+1", tag+" "+prevTag, rw));
+        fs.add(_param_g.toFeature(network, FeatType.unigram.name()+"*w+2", tag+" "+prevTag, rrw));
+        fs.add(_param_g.toFeature(network, FeatType.unigram.name()+"*po0", tag+" "+prevTag, POS));
+        fs.add(_param_g.toFeature(network, FeatType.unigram.name()+"*po-1", tag+" "+prevTag, lPOS));
+        fs.add(_param_g.toFeature(network, FeatType.unigram.name()+"*po-2", tag+" "+prevTag, llPOS));
+        fs.add(_param_g.toFeature(network, FeatType.unigram.name()+"*po+1", tag+" "+prevTag, rPOS));
+        fs.add(_param_g.toFeature(network, FeatType.unigram.name()+"*po+2", tag+" "+prevTag, rrPOS));
+        fs.add(_param_g.toFeature(network, FeatType.unigram.name()+"*ph0", tag+" "+prevTag, phrase));
+        fs.add(_param_g.toFeature(network, FeatType.unigram.name()+"*ph-1", tag+" "+prevTag, lPhrase));
+        fs.add(_param_g.toFeature(network, FeatType.unigram.name()+"*ph-2", tag+" "+prevTag, llPhrase));
+        fs.add(_param_g.toFeature(network, FeatType.unigram.name()+"*ph+1", tag+" "+prevTag, rPhrase));
+        fs.add(_param_g.toFeature(network, FeatType.unigram.name()+"*ph+2", tag+" "+prevTag, rrPhrase));
+
+        fs.add(_param_g.toFeature(network, FeatType.bigram.name()+"*w-2-1", tag+" "+prevTag, llw+" "+lw));
+        fs.add(_param_g.toFeature(network, FeatType.bigram.name()+"*w-10", tag+" "+prevTag, lw+" "+w));
+        fs.add(_param_g.toFeature(network, FeatType.bigram.name()+"*w0+1", tag+" "+prevTag, w+" "+rw));
+        fs.add(_param_g.toFeature(network, FeatType.bigram.name()+"*w+1+2", tag+" "+prevTag, rw+" "+rrw));
+        fs.add(_param_g.toFeature(network, FeatType.bigram.name()+"*po-2-1", tag+" "+prevTag, llPOS+" "+lPOS));
+        fs.add(_param_g.toFeature(network, FeatType.bigram.name()+"*po-10", tag+" "+prevTag, lPOS+" "+POS));
+        fs.add(_param_g.toFeature(network, FeatType.bigram.name()+"*po0+1", tag+" "+prevTag, POS+" "+rPOS));
+        fs.add(_param_g.toFeature(network, FeatType.bigram.name()+"*po+1+2", tag+" "+prevTag, rPOS+" "+rrPOS));
+        fs.add(_param_g.toFeature(network, FeatType.bigram.name()+"*ph-2-1", tag+" "+prevTag, llPhrase+" "+lPhrase));
+        fs.add(_param_g.toFeature(network, FeatType.bigram.name()+"*ph-10", tag+" "+prevTag, lPhrase+" "+phrase));
+        fs.add(_param_g.toFeature(network, FeatType.bigram.name()+"*ph0+1", tag+" "+prevTag, phrase+" "+rPhrase));
+        fs.add(_param_g.toFeature(network, FeatType.bigram.name()+"*ph+1+2", tag+" "+prevTag, rPhrase+" "+rrPhrase));
+
 
 
         //Long Range Features
@@ -141,14 +177,14 @@ public class RelFeatureManager extends FeatureManager {
                 String arg1PathTags="";
                 if(relStart>arg1Idx){
                     for(int i=arg1Idx+1; i<relStart; i++){
-                        arg1PathWords += wts.get(i).getForm()+" ";
-                        arg1PathTags += wts.get(i).getTag()+" ";
+                        arg1PathWords=arg1PathWords+wts.get(i).getForm()+" ";
+                        arg1PathTags=arg1PathTags+wts.get(i).getTag()+" ";
                     }
                 }
                 else{
                     for(int i=relEnd+1; i<arg1Idx; i++){
-                        arg1PathWords += wts.get(i).getForm()+" ";
-                        arg1PathTags += wts.get(i).getTag()+" ";
+                        arg1PathWords=arg1PathTags+wts.get(i).getForm()+" ";
+                        arg1PathTags=arg1PathTags+wts.get(i).getTag()+" ";
                     }
                 }
 
@@ -156,29 +192,29 @@ public class RelFeatureManager extends FeatureManager {
                 String arg2PathTags="";
                 if(relStart>arg2Idx){
                     for(int i=arg2Idx+1; i<relStart; i++){
-                        arg2PathWords += wts.get(i).getForm()+" ";
-                        arg2PathTags += wts.get(i).getTag();
+                        arg2PathWords=arg1PathWords+wts.get(i).getForm()+" ";
+                        arg2PathTags=arg2PathTags+wts.get(i).getTag();
                     }
                 }
                 else{
                     for(int i=relEnd+1; i<arg2Idx; i++){
-                        arg2PathWords += wts.get(i).getForm()+" ";
-                        arg2PathTags += wts.get(i).getTag();
+                        arg2PathWords=arg1PathWords+wts.get(i).getForm()+" ";
+                        arg2PathTags=arg2PathTags+wts.get(i).getTag();
                     }
                 }
                 String arg12PathWords="";
                 String arg12PathTags="";
-                
-                
+
+
                 int arg12Start=Math.min(arg1Idx, arg2Idx);
                 arg12Start = Math.min(arg12Start, relStart);
-                
+
                 int arg12End=Math.max(arg1Idx, arg2Idx);
                 arg12End = Math.max(arg12End, relEnd);
-                
+
                 for(int i=arg12Start; i<=arg12End; i++){
-                    arg12PathWords += wts.get(i).getForm() + " ";
-                    arg12PathTags  += wts.get(i).getTag() + " ";
+                    arg12PathWords=arg12PathWords+wts.get(i).getForm() + " ";
+                    arg12PathTags=arg12PathTags+wts.get(i).getTag() + " ";
                 }
 
                 fs.add(_param_g.toFeature(network, FeatType.longPath+"-w-arg1", "REL", arg1PathWords));
@@ -191,10 +227,7 @@ public class RelFeatureManager extends FeatureManager {
 
             }
         }
-        int childIdx=children_k[0];
-        int[] childArr=network.getNodeArray(childIdx);
-        String prevTag=childArr[1]+"";
-        fs.add(_param_g.toFeature(network, FeatType.transition.name(), tag, prevTag));
+
 
         return this.createFeatureArray(network,fs);
     }

@@ -1,0 +1,21 @@
+<component name="libraryTable">
+  <library name="models">
+    <ANNOTATIONS>
+      <root url="file://$PROJECT_DIR$/../postagger/models" />
+    </ANNOTATIONS>
+    <CLASSES>
+      <root url="file://$PROJECT_DIR$/../postagger/models" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="file://$PROJECT_DIR$/../postagger/models" />
+    </JAVADOC>
+    <NATIVE>
+      <root url="file://$PROJECT_DIR$/../postagger/models" />
+    </NATIVE>
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/../postagger/models" />
+    </SOURCES>
+    <jarDirectory url="file://$PROJECT_DIR$/../postagger/models" recursive="false" />
+    <jarDirectory url="file://$PROJECT_DIR$/../postagger/models" recursive="false" type="SOURCES" />
+  </library>
+</component>

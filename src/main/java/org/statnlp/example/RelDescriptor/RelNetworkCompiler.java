@@ -23,7 +23,6 @@ public class RelNetworkCompiler extends NetworkCompiler {
     }
     public Map<String, Integer> chainIdMap=new HashMap<String, Integer>();
 
-    private final boolean DEBUG = false;
 
     public RelNetworkCompiler(List<String> relTags) {
         this.relTags=relTags;
@@ -31,8 +30,8 @@ public class RelNetworkCompiler extends NetworkCompiler {
         for(int i=0; i<this.relTags.size(); i++){
             this.relTags2Id.put(relTags.get(i), i);
         }
+        //buildGenericNetwork();
     }
-    
     protected enum NodeType{
       leaf, root, tag;
     };
@@ -54,7 +53,7 @@ public class RelNetworkCompiler extends NetworkCompiler {
         BaseNetwork.NetworkBuilder<BaseNetwork> builder=BaseNetwork.NetworkBuilder.builder();
         RelInstance myInst=(RelInstance)inst;
         List<String> output=myInst.getOutput();
-        int left = myInst.size(), right = myInst.size();
+        int left=myInst.size(), right=myInst.size();
         String prevTag="O";
         boolean startFound=false;
         for(int i=0; i<myInst.size(); i++){
@@ -67,10 +66,8 @@ public class RelNetworkCompiler extends NetworkCompiler {
             }
             prevTag=output.get(i);
         }
-        if (startFound && right == myInst.size())
-        	right = myInst.size() - 1; //means the last word is I-R
-        
-        int id=left * 100+right;
+
+        int id=left*100+right;
         long leaf=toNode_leaf();
         builder.addNode(leaf);
         long root=toNode_root(myInst.size());
@@ -84,23 +81,17 @@ public class RelNetworkCompiler extends NetworkCompiler {
             child=node;
         }
         builder.addEdge(root, new long[]{child});
-        BaseNetwork network = builder.build(networkId, inst, param, this);
-        if (DEBUG) {
-        	BaseNetwork unlabeled = (BaseNetwork)this.compileUnlabeled(networkId, myInst, param);
-        	if (!unlabeled.contains(network)) {
-        		throw new RuntimeException("not contained");
-        	}
-        }
+        BaseNetwork network=builder.build(networkId, inst, param, this);
         return network;
     }
-    
+
     private boolean covers(int argIdx, int left, int right ){
         if(argIdx>=left && argIdx<=right){
             return true;
         }
         return false;
     }
-    
+
     @Override
     public Network compileUnlabeled(int networkId, Instance inst, LocalNetworkParam param) {
 
@@ -127,7 +118,8 @@ public class RelNetworkCompiler extends NetworkCompiler {
                     if(covers(i,left,right)){
                         if(i==left){
                             tagId=this.relTags2Id.get("B-R");
-                        } else{
+                        }
+                        else{
                             tagId=this.relTags2Id.get("I-R");
                         }
                     }
@@ -143,12 +135,12 @@ public class RelNetworkCompiler extends NetworkCompiler {
                 builder.addEdge(root, new long[]{child});
             }
         }
-        child = leaf;
-        int left = size;
-        int right = size;
-        int id=left * 100+right;
+        child=leaf;
+        int left=size;
+        int right=size;
+        int id=left*100+right;
 
-        for(int i = 0; i < size; i++){
+        for(int i=0; i<size; i++){
             int tagId=this.relTags2Id.get("O");
             long node=toNode_tag(i, tagId, id);
             builder.addNode(node);

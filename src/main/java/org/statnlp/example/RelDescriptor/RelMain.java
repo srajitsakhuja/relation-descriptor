@@ -3,9 +3,7 @@ package org.statnlp.example.RelDescriptor;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Random;
 
 import org.statnlp.commons.io.RAWF;
 import org.statnlp.commons.types.Instance;
@@ -17,80 +15,114 @@ import org.statnlp.hypergraph.NetworkModel;
 
 public class RelMain {
     private static int fileId;
-    private static double[][] allMetrics = new double[2][4];
-    private static String dataFile="data/RelDataSet/nyt.txt";
-    private static int dataNum=1000;
+    private static List<String> partialAccuracies=new ArrayList<>();
+    private static List<String> completeAccuracies=new ArrayList<>();
+    private static List<String> partialPrecs=new ArrayList<>();
+    private static List<String> completePrecs=new ArrayList<>();
+    private static List<String> partialRecs=new ArrayList<>();
+    private static List<String> completeRecs=new ArrayList<>();
+    private static String trainFilePath="data/RelDataSet/nyt_train";
+    private static String testFilePath="data/RelDataSet/nyt_test";
+    private static int trainNum=1000;
+    private static int testNum=1000;
     private static int iterCount=1000;
     private static int threadCount=8;
     private static List<String> RELTags=new ArrayList<String>();
-    public static long randomSeed = 1234;
-    
     public static void main(String...args) throws IOException, InterruptedException{
         fileId=Integer.parseInt(args[0]);;
-//        trainNum=Integer.parseInt(args[1]);
-//        testNum=Integer.parseInt(args[2]);
+
         threadCount=Integer.parseInt(args[1]);;
         boolean oneFile=Boolean.parseBoolean(args[2]);
         NetworkConfig.L2_REGULARIZATION_CONSTANT=Double.parseDouble(args[3]);
         NetworkConfig.NUM_THREADS=threadCount;
         NetworkConfig.PARALLEL_FEATURE_EXTRACTION = true;
         NetworkConfig.AVOID_DUPLICATE_FEATURES = true;
-        Evaluator evaluator = new Evaluator();
-        int i= oneFile ? fileId :  0;
-        
-        Random rand = new Random(randomSeed);
-        Instance[] allInstances =readData(dataFile, true, dataNum);
-        allInstances = shuffle(allInstances, rand);
-        
-        Instance[][] splits = splitIntoKFolds(allInstances, fileId);
-        for(int j = 0; j < RELTags.size(); j++){
-            System.out.println("id: " + j + ", tag:" + RELTags.get(j));
+
+        int i=1;
+        if(oneFile){
+            i=fileId;
         }
-        
-        for(; i < fileId; i++){
-        	Instance[] testData = splits[fileId - i - 1];
-			for(Instance inst : testData) {
-				inst.setUnlabeled();
-			}
-			Instance[] trainData = new Instance[allInstances.length - testData.length];
-			int idx = 0;
-			for (int t = 0; t < fileId; t++) {
-				if (t == fileId - i - 1) continue;
-				for (int k = 0; k < splits[t].length; k++) {
-					splits[t][k].setLabeled();
-					splits[t][k].setPrediction(null);
-					trainData[idx++] = splits[t][k];
-				}
-			}
+        for(; i<=fileId; i++){
+            RelInstance[] trainInsts=readData(trainFilePath+i, true, trainNum);
+
             GlobalNetworkParam gnp=new GlobalNetworkParam();
             RelFeatureManager fman=new RelFeatureManager(gnp);
             RelNetworkCompiler compiler=new RelNetworkCompiler(RELTags);
-            
-            NetworkModel model = DiscriminativeNetworkModel.create(fman, compiler);
-            model.train(trainData, iterCount);
-
-            Instance[] results = model.decode(testData);
-            
-            double[][] metrics = evaluator.evaluate(results);
-            for (int m = 0; m < metrics.length; m++) {
-            	for (int j = 0; j < metrics[m].length; j++) {
-            		allMetrics[m][j] += metrics[m][j];
-            	}
+            for(int j=0; j<RELTags.size(); j++){
+                System.out.println("id: " + j + ", tag:" + RELTags.get(j));
             }
-            System.out.printf("[curr Partial] Acc.: %.3f\tPrec.: %.3f%%\tRec.: %.3f%%\tF1.: %.3f%%\n", metrics[0][0], metrics[0][1], metrics[0][2], metrics[0][3]);
-            System.out.printf("[curr Complete] Acc.: %.3f\tPrec.: %.3f%%\tRec.:%.3f%%\tF1.: %.3f%%\n", metrics[1][0], metrics[1][1], metrics[1][2], metrics[0][3]);
+            NetworkModel model= DiscriminativeNetworkModel.create(fman, compiler);
+            model.train(trainInsts, iterCount);
+
+            RelInstance testInsts[]=readData(testFilePath+i, false, testNum);
+            Instance[] results=model.decode(testInsts);
+
+
+            int partial[]={0,0,0,0};
+            int complete[]={0,0,0,0};
+            for(Instance res:results){
+                RelInstance inst=(RelInstance) res;
+                List<String> gold=inst.getOutput();
+                List<String> pred=inst.getPrediction();
+                Evaluator eval=new Evaluator(gold,pred);
+                for(int k=0; k<complete.length; k++){
+                    complete[k]+=eval.complete[k];
+                    partial[k]+=eval.partial[k];
+                }
+            }
+            int partialTP=partial[0]; int partialTN=partial[1]; int partialFP=partial[2]; int partialFN=partial[3];
+            System.out.println("TP\tTN\tFP\tFN");
+            double pprecision=(partialTP*100.0/(partialTP+partialFP));
+            double precall=(partialTP*100.0/(partialTP+partialFN));
+            double paccuracy=(partialTP+partialTN)*100.0/(partialTP+partialTN+partialFP+partialFN);
+            partialPrecs.add(pprecision+"");
+            partialRecs.add(precall+"");
+            partialAccuracies.add(paccuracy+"");
+
+            int completeTP=complete[0];int completeTN=complete[1];int completeFP=complete[2]; int completeFN=complete[3];
+            double cprecision=(completeTP*100.0)/(completeTP+completeFP);
+            double crecall=(completeTP*100.0)/(completeTP+completeFN);
+            double caccuracy=(completeTP+completeTN)*100.0/(completeTP+completeTN+completeFP+completeFN);
+            completePrecs.add(cprecision+"");
+            completeRecs.add(crecall+"");
+            completeAccuracies.add(caccuracy+"");
         }
-        int limit = oneFile ? 1 : fileId;
-        double avgPartialAcc = allMetrics[0][0]/ limit;
-        double avgPartialPrec = allMetrics[0][1] / limit;
-        double avgPartialRec = allMetrics[0][2] / limit;
-        double avgPartialF1 = allMetrics[0][3] / limit;
-        double avgCompAcc = allMetrics[1][0] / limit;
-        double avgCompPrec = allMetrics[1][1] / limit;
-        double avgCompRec = allMetrics[1][2] / limit;
-        double avgCompF1 = allMetrics[1][3] / limit;
-        System.out.printf("[Avg Partial] Acc.: %.3f\tPrec.: %.3f%%\tRec.: %.3f%%\tF1.: %.3f%%\n", avgPartialAcc, avgPartialPrec, avgPartialRec, avgPartialF1);
-        System.out.printf("[Avg Complete] Acc.: %.3f\tPrec.: %.3f%%\tRec.: %.3f%%\tF1.: %.3f%%\n", avgCompAcc, avgCompPrec, avgCompRec, avgCompF1);
+        double partialAccuracyAverage=0.0;
+        double partialPrecAverage=0.0;
+        double partialRecAverage=0.0;
+
+        double completeAccuracyAverage=0.0;
+        double completePrecAverage=0.0;
+        double completeRecAverage=0.0;
+        int limit=fileId;
+        if(oneFile){
+            limit=1;
+        }
+        System.out.println("PARTIAL:");
+        System.out.println("ACCURACY\tPRECISION\tRECALL");
+        for(i=0; i<limit; i++){
+            System.out.println(partialAccuracies.get(i)+"\t"+partialPrecs.get(i)+"\t"+partialRecs.get(i));
+            partialAccuracyAverage+=Double.parseDouble(partialAccuracies.get(i));
+            partialPrecAverage+=Double.parseDouble(partialPrecs.get(i));
+            partialRecAverage+=Double.parseDouble(partialRecs.get(i));
+        }
+        partialAccuracyAverage/=limit;
+        partialPrecAverage/=limit;
+        partialRecAverage/=limit;
+        System.out.println(partialAccuracyAverage+"\t"+partialPrecAverage+"\t"+partialRecAverage+"\n\n");
+
+        System.out.println("COMPLETE:");
+        System.out.println("ACCURACY\tPRECISION\tRECALL");
+        for(i=0; i<limit; i++){
+            System.out.println(completeAccuracies.get(i)+"\t"+completePrecs.get(i)+"\t"+completeRecs.get(i));
+            completeAccuracyAverage+=Double.parseDouble(completeAccuracies.get(i));
+            completePrecAverage+=Double.parseDouble(completePrecs.get(i));
+            completeRecAverage+=Double.parseDouble(completeRecs.get(i));
+        }
+        completeAccuracyAverage/=limit;
+        completePrecAverage/=limit;
+        completeRecAverage/=limit;
+        System.out.println(completeAccuracyAverage+"\t"+completePrecAverage+"\t"+completeRecAverage+"\n\n");
     }
 
     public static RelInstance[] readData(String fpath, boolean isTraining, int limit) throws IOException{
@@ -104,13 +136,12 @@ public class RelMain {
         List<String> relTags=new ArrayList<String>();
         int count=0;
         while((line=br.readLine())!=null){
-        	if (line.startsWith("NYT-") || line.startsWith("Wikipedia-"))  continue; //sentence ID number
             if(line.length()>0){
-                String[] line_split=line.split("\\t");
-                String word=line_split[1];
-                String posTag=line_split[2];
-                String phraseTag=line_split[3];
-                String reltag=line_split[4];
+                String[] line_split=line.split(" ");
+                String word=line_split[0];
+                String posTag=line_split[1];
+                String phraseTag=line_split[2];
+                String reltag=line_split[3];
                 String relTag=reltag;
 
                 WordToken wt=new WordToken(word, posTag);
@@ -156,28 +187,4 @@ public class RelMain {
         }*/
         return insts.toArray(new RelInstance[insts.size()]);
     }
-    
-    public static Instance[][] splitIntoKFolds(Instance[] allInsts, int k) {
-		Instance[][] splits = new Instance[k][];
-		int num = allInsts.length / k; 
-		for (int f = 0; f < k; f++) {
-			int currNum = f != k - 1 ? num : allInsts.length - (k - 1) * num;
-			splits[f] = new Instance[currNum];
-			for (int i = 0; i < currNum; i++) {
-				splits[f][i] = allInsts[f * num + i];
-			}
-			System.out.printf("[Info] Fold %d: %d\n", (f+1), splits[f].length);
-		}
-		return splits;
-	}
-    
-    public static Instance[] shuffle(Instance[] insts, Random rand) {
-		List<Instance> list = new ArrayList<>(insts.length);
-		for (int i = 0; i < insts.length; i++) {
-			list.add(insts[i]);
-		}
-		Collections.shuffle(list, rand);
-		System.out.println("[Info] shuffle insts:"+list.size());
-		return list.toArray(new Instance[list.size()]);
-	}
 }
