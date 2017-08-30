@@ -34,32 +34,20 @@ public class RelationLatentMain {
         List<RelationInstance> testInsts=new ArrayList<RelationInstance>();
         for(int i=0; i<10; i++){
             trainInsts.add(insts[i]);
-//            System.out.println(insts[i].isLabeled());
         }
         for(int i=20; i<insts.length; i++){
             testInsts.add(insts[i]);
         }
         RelationInstance[] trainInstsArr=trainInsts.toArray(new RelationInstance[trainInsts.size()]);
-//        for(int i=0; i<trainInstsArr.length; i++){
-//            System.out.println(trainInstsArr[i].isLabeled());
-//        }
+
         GlobalNetworkParam gnp=new GlobalNetworkParam();
         LatentFeatureManager fman=new LatentFeatureManager(gnp);
         LatentNetworkCompiler networkCompiler=new LatentNetworkCompiler(relTypes);
         NetworkModel model= DiscriminativeNetworkModel.create(fman, networkCompiler);
         model.train(trainInsts.toArray(new RelationInstance[trainInsts.size()]), iterCount);
 //        Instance[] results=model.decode(testInsts.toArray(new RelationInstance[testInsts.size()]));
-
     }
-//    private void printOutputs(RelationInstance[] results){
-//        for(int i=0; i<results.length; i++){
-//            Output output=results[i].getOutput();
-//            String relType=output.relType;
-//            System.out.println(relType);
-//            for(int j=0; j<results[i].getPrediction().)
-//
-//        }
-//    }
+
 
     public static RelationInstance[] readData(String processedFilePath, boolean isTraining) throws IOException{
         BufferedReader br= RAWF.reader(processedFilePath);
