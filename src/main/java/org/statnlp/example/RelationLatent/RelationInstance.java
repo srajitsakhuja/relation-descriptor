@@ -1,5 +1,6 @@
 package org.statnlp.example.RelationLatent;
 
+import org.statnlp.commons.types.Instance;
 import org.statnlp.example.base.BaseInstance;
 
 public class RelationInstance extends BaseInstance<RelationInstance, Input, Output> {
@@ -19,5 +20,14 @@ public class RelationInstance extends BaseInstance<RelationInstance, Input, Outp
 
     public int size(){
         return this.input.size();
+    }
+
+    public Input duplicateInput(){
+        return this.input;
+    }
+
+    @Override
+    public RelationInstance duplicate() {
+         return this;
     }
 }

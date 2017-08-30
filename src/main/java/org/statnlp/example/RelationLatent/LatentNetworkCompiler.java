@@ -37,13 +37,13 @@ public class LatentNetworkCompiler extends NetworkCompiler {
     public LatentNetworkCompiler(List<String> relTypes) {
         this.relTypes=relTypes;
         for(int i=0; i<relTypes.size(); i++){
-            relType2Id.put(relTypes.get(i), i+1);
+            relType2Id.put(relTypes.get(i), i);
             relTags.add("B-"+relTypes.get(i));
             relTags.add("I-"+relTypes.get(i));
         }
         relTags.add("O");
         for(int i=0; i<relTags.size(); i++){
-            relTag2Id.put(relTags.get(i),i+1);
+            relTag2Id.put(relTags.get(i),i);
         }
     }
     private boolean covers(int el, int left, int right){
@@ -95,16 +95,7 @@ public class LatentNetworkCompiler extends NetworkCompiler {
                 builder.addEdge(root, new long[]{child});
             }
         }
-        int left=size; int right=size;
-        int chainId=left*100+right;
-        child=leaf;
-        for(int pos=0; pos<size; pos++){
-            long tagNode=toTagNode(pos, relTag2Id.get("O"), chainId);
-            builder.addNode(tagNode);
-            builder.addEdge(tagNode, new long[]{child});
-            child=tagNode;
-        }
-        builder.addEdge(root, new long[]{child});
+
         return builder.build(networkId, inst, param, this);
     }
 
@@ -117,6 +108,8 @@ public class LatentNetworkCompiler extends NetworkCompiler {
         int e2=myInst.input.e2Pos;
         long leaf=toLeafNode();
         long root=toRootNode(size);
+        builder.addNode(leaf);
+        builder.addNode(root);
         long child=leaf;
 
         for(int i=0; i<this.relTypes.size(); i++){
@@ -152,16 +145,7 @@ public class LatentNetworkCompiler extends NetworkCompiler {
                 }
             }
         }
-        int left=size; int right=size;
-        int chainId=left*100+right;
-        child=leaf;
-        for(int pos=0; pos<size; pos++){
-            long tagNode=toTagNode(pos, relTag2Id.get("O"), chainId);
-            builder.addNode(tagNode);
-            builder.addEdge(tagNode, new long[]{child});
-            child=tagNode;
-        }
-        builder.addEdge(root, new long[]{child});
+
         return builder.build(networkId, inst, param, this);
     }
 
