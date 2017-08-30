@@ -40,6 +40,7 @@ public class LatentNetworkCompiler extends NetworkCompiler {
             relType2Id.put(relTypes.get(i), i);
             relTags.add("B-"+relTypes.get(i));
             relTags.add("I-"+relTypes.get(i));
+            System.out.print(relTypes.get(i));
         }
         relTags.add("O");
         for(int i=0; i<relTags.size(); i++){
@@ -54,6 +55,7 @@ public class LatentNetworkCompiler extends NetworkCompiler {
     }
     @Override
     public Network compileLabeled(int networkId, Instance inst, LocalNetworkParam param) {
+        System.out.println("Reached here");
         BaseNetwork.NetworkBuilder<BaseNetwork> builder=BaseNetwork.NetworkBuilder.builder();
         RelationInstance myInst=(RelationInstance) inst;
         int size=myInst.size();
@@ -65,13 +67,14 @@ public class LatentNetworkCompiler extends NetworkCompiler {
         int e2=myInst.input.e2Pos;
         long child=leaf;
         String relType=myInst.output.relType;
+        System.out.println(relType);
         int relId=this.relType2Id.get(relType);
         for(int left=0; left<size; left++){
             for(int right=left; right<inst.size(); right++){
                 if(covers(e1, left, right)  || covers(e2, left, right)){
                     continue;
                 }
-                child=leaf;
+                //child=leaf;
                 int chainId=relId*1000+left*100+right;
                 for(int pos=0; pos<size; pos++){
                     String tag;
@@ -103,7 +106,7 @@ public class LatentNetworkCompiler extends NetworkCompiler {
     public Network compileUnlabeled(int networkId, Instance inst, LocalNetworkParam param) {
         BaseNetwork.NetworkBuilder builder=BaseNetwork.NetworkBuilder.builder();
         RelationInstance myInst=(RelationInstance)inst;
-        int size=inst.size();
+        int size=myInst.size();
         int e1=myInst.input.e1Pos;
         int e2=myInst.input.e2Pos;
         long leaf=toLeafNode();
@@ -116,7 +119,7 @@ public class LatentNetworkCompiler extends NetworkCompiler {
             String relType=this.relTypes.get(i);
             int relId=this.relType2Id.get(relType);
             for(int left=0; left<size; left++){
-                for(int right=left; right<inst.size(); right++){
+                for(int right=left; right<size; right++){
                     if(covers(e1, left, right)  || covers(e2, left, right)){
                         continue;
                     }

@@ -1,5 +1,6 @@
 package org.statnlp.example.RelationLatent;
 
+import edu.stanford.nlp.tagger.maxent.MaxentTagger;
 import org.statnlp.commons.io.RAWF;
 import org.statnlp.commons.types.Sentence;
 import org.statnlp.commons.types.WordToken;
@@ -7,20 +8,38 @@ import org.statnlp.commons.types.WordToken;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
-/**
- *padding added around punctuations including commas, colons, full-stops, question-marks etc.
- */
+import edu.stanford.nlp.maxent.*;
+/*
+ * padding added around punctuations including commas, colons, full-stops, question-marks etc.
+ * POS Tagged using the Stanford CoreNLP POSTagger
+*/
 public class Preprocessor {
     Preprocessor(String rPath, String oPath) throws IOException{
         List<String>lines=readData(rPath);
         FileWriter fw=new FileWriter(oPath);
         BufferedWriter bw=new BufferedWriter(fw);
         String wString="";
+        int count=0;
+        MaxentTagger tagger=new MaxentTagger("/Users/srajitsakhuja/Downloads/postagger/models/english-bidirectional-distsim.tagger");
+
         for(String line:lines){
             //System.out.print(line);
             wString=wString+line;
+            if(count%4==0){
+                //System.out.println(line);
+                String[] word_tag=tagger.tagString(line).split(" ");
+                String tagString="";
+                String wordString="";
+                for(int i=0; i<word_tag.length; i++){
+                    tagString=tagString+word_tag[i].split("_")[1]+" ";
+                    wordString=wordString+word_tag[i].split("_")[0]+" ";
+                }
+                tagString=tagString+"\n";
+                wString=wString+wordString+"\n"+tagString;
+            }
+            count++;
         }
-        System.out.print(wString);
+        //System.out.print(wString);
         bw.write(wString);
         bw.close();
     }
