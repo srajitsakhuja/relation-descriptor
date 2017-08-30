@@ -151,17 +151,17 @@ public class LatentNetworkCompiler extends NetworkCompiler {
                     builder.addEdge(root, new long[]{child});
                 }
             }
-            int left=size; int right=size;
-            int chainId=left*100+right;
-            child=leaf;
-            for(int pos=0; pos<size; pos++){
-                long tagNode=toTagNode(pos, relTag2Id.get("O"), chainId);
-                builder.addNode(tagNode);
-                builder.addEdge(tagNode, new long[]{child});
-                child=tagNode;
-            }
-            builder.addEdge(root, new long[]{child});
         }
+        int left=size; int right=size;
+        int chainId=left*100+right;
+        child=leaf;
+        for(int pos=0; pos<size; pos++){
+            long tagNode=toTagNode(pos, relTag2Id.get("O"), chainId);
+            builder.addNode(tagNode);
+            builder.addEdge(tagNode, new long[]{child});
+            child=tagNode;
+        }
+        builder.addEdge(root, new long[]{child});
         return builder.build(networkId, inst, param, this);
     }
 
