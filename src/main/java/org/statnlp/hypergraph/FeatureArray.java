@@ -185,6 +185,11 @@ public class FeatureArray implements Serializable{
 	public void next(FeatureArray next){
 		this._next = next;
 	}
+	
+	public FeatureArray addNext(FeatureArray next){
+		this._next = next;
+		return this._next;
+	}
 
 	/**
 	 * Return the next feature array in this chain.

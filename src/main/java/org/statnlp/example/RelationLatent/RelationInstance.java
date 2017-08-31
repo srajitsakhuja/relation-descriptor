@@ -1,11 +1,12 @@
 package org.statnlp.example.RelationLatent;
 
-import org.statnlp.commons.types.Instance;
 import org.statnlp.example.base.BaseInstance;
 
 public class RelationInstance extends BaseInstance<RelationInstance, Input, Output> {
 
-    public RelationInstance(int instanceId, double weight){
+	private static final long serialVersionUID = 4081914458845526401L;
+	
+	public RelationInstance(int instanceId, double weight){
         super(instanceId, weight);
     }
 

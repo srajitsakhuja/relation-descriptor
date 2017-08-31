@@ -1,18 +1,16 @@
 package org.statnlp.example.RelationLatent;
-import jdk.nashorn.internal.objects.Global;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.statnlp.commons.io.RAWF;
 import org.statnlp.commons.types.Instance;
 import org.statnlp.commons.types.WordToken;
-import java.io.BufferedReader;
 import org.statnlp.hypergraph.DiscriminativeNetworkModel;
 import org.statnlp.hypergraph.GlobalNetworkParam;
 import org.statnlp.hypergraph.NetworkConfig;
 import org.statnlp.hypergraph.NetworkModel;
-
-import javax.management.relation.Relation;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 public class RelationLatentMain {
     private static String unprocessedFilePath="data/RelDataSet/sem-eval-task8.txt";

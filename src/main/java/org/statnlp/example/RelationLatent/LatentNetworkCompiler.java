@@ -1,17 +1,22 @@
 package org.statnlp.example.RelationLatent;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.statnlp.commons.types.Instance;
 import org.statnlp.example.base.BaseNetwork;
+import org.statnlp.example.base.BaseNetwork.NetworkBuilder;
 import org.statnlp.hypergraph.LocalNetworkParam;
 import org.statnlp.hypergraph.Network;
 import org.statnlp.hypergraph.NetworkCompiler;
 import org.statnlp.hypergraph.NetworkIDMapper;
 
-import javax.xml.soap.Node;
-import java.util.*;
-
 public class LatentNetworkCompiler extends NetworkCompiler {
-    private List<String> relTypes=new ArrayList<String>();
+	private static final long serialVersionUID = 2046107789709874963L;
+	private List<String> relTypes=new ArrayList<String>();
     private List<String> relTags=new ArrayList<String>();
     private Map<String, Integer> relType2Id=new HashMap<String, Integer>();
     private Map<String, Integer> relTag2Id=new HashMap<String, Integer>();
@@ -106,7 +111,7 @@ public class LatentNetworkCompiler extends NetworkCompiler {
 
     @Override
     public Network compileUnlabeled(int networkId, Instance inst, LocalNetworkParam param) {
-        BaseNetwork.NetworkBuilder builder=BaseNetwork.NetworkBuilder.builder();
+       NetworkBuilder<BaseNetwork> builder= NetworkBuilder.builder();
         RelationInstance myInst=(RelationInstance)inst;
         int size=myInst.size();
 

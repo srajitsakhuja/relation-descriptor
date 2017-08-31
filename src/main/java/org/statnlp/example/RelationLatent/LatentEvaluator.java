@@ -7,7 +7,8 @@ import java.util.List;
 public class LatentEvaluator {
     public double metrics[];
 
-    public LatentEvaluator(Instance[] results){
+    @SuppressWarnings("unchecked")
+	public LatentEvaluator(Instance[] results){
         metrics=new double[4];
         String relType;
         List<String> pred;
