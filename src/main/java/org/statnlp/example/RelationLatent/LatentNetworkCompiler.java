@@ -55,11 +55,10 @@ public class LatentNetworkCompiler extends NetworkCompiler {
         return NetworkIDMapper.toHybridNodeID(nodeInfo);
     }
 
-    private boolean covers(int el, int left, int right){
-        if(el>=left && el<=right){
-            return true;
-        }
-        return false;
+    private boolean covers(int eStart, int eEnd, int left, int right){
+        if(eEnd<left){return false;}
+        else if(eStart>right){return false;}
+        return true;
     }
     @Override
     public Network compileLabeled(int networkId, Instance inst, LocalNetworkParam param) {
@@ -70,22 +69,25 @@ public class LatentNetworkCompiler extends NetworkCompiler {
         long root=toRootNode(size);
         builder.addNode(leaf);
         builder.addNode(root);
-        int e1=myInst.input.e1Pos;
-        int e2=myInst.input.e2Pos;
+        int e1Start=myInst.input.e1Start;
+        int e1End=myInst.input.e1End;
+        int e2Start=myInst.input.e2Start;
+        int e2End=myInst.input.e1End;
+
         long child=leaf;
         String relType=myInst.output.relType;
         //System.out.println(relType);
         int relId=this.relType2Id.get(relType);
         for(int left=0; left<size; left++){
             for(int right=left; right<inst.size(); right++){
-                if(covers(e1, left, right)  || covers(e2, left, right)){
+                if(covers(e1Start, e1End, left, right)  || covers(e2Start, e2End, left, right)){
                     continue;
                 }
                 child=leaf;
                 int chainId=relId*1000+left*100+right;
                 for(int pos=0; pos<size; pos++){
                     String tag;
-                    if(covers(pos, left, right)){
+                    if(covers(pos, pos,  left, right)){
                         if(pos==left){
                             tag="B-"+relType;
                         }
@@ -115,8 +117,10 @@ public class LatentNetworkCompiler extends NetworkCompiler {
         RelationInstance myInst=(RelationInstance)inst;
         int size=myInst.size();
 
-        int e1=myInst.input.e1Pos;
-        int e2=myInst.input.e2Pos;
+        int e1Start=myInst.input.e1Start;
+        int e1End=myInst.input.e1End;
+        int e2Start=myInst.input.e2Start;
+        int e2End=myInst.input.e1End;
         long leaf=toLeafNode();
         long root=toRootNode(size);
         builder.addNode(leaf);
@@ -128,14 +132,14 @@ public class LatentNetworkCompiler extends NetworkCompiler {
             int relId=this.relType2Id.get(relType);
             for(int left=0; left<size; left++){
                 for(int right=left; right<size; right++){
-                    if(covers(e1, left, right)  || covers(e2, left, right)){
+                    if(covers(e1Start, e1End, left, right)  || covers(e2Start, e2End, left, right)){
                         continue;
                     }
                     child=leaf;
                     int chainId=relId*1000+left*100+right;
                     for(int pos=0; pos<size; pos++){
                         String tag;
-                        if(covers(pos, left, right)){
+                        if(covers(pos, pos, left, right)){
                             if(pos==left){
                                 tag="B-"+relType;
                             }

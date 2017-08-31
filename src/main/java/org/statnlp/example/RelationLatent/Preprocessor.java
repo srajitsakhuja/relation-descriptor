@@ -16,6 +16,8 @@ import edu.stanford.nlp.maxent.*;
 public class Preprocessor {
     Preprocessor(String rPath, String oPath) throws IOException{
         List<String>lines=readData(rPath);
+        System.out.println(lines.size()/4+" instances read from "+rPath);
+
         FileWriter fw=new FileWriter(oPath);
         BufferedWriter bw=new BufferedWriter(fw);
         String wString="";
@@ -23,10 +25,9 @@ public class Preprocessor {
         MaxentTagger tagger=new MaxentTagger("/Users/srajitsakhuja/Downloads/postagger/models/english-bidirectional-distsim.tagger");
 
         for(String line:lines){
-            //System.out.print(line);
+            // System.out.print(line);
             wString=wString+line;
             if(count%4==0){
-                //System.out.println(line);
                 String[] word_tag=tagger.tagString(line).split(" ");
                 String tagString="";
                 String wordString="";
@@ -39,9 +40,12 @@ public class Preprocessor {
             }
             count++;
         }
+        System.out.println("POS Tagging complete");
+
         //System.out.print(wString);
         bw.write(wString);
         bw.close();
+        System.out.println(count/4+" lines written to"+oPath);
     }
     private boolean isInteger(String x){
         try{
@@ -68,13 +72,17 @@ public class Preprocessor {
         BufferedReader br= RAWF.reader(fpath);
         String line=null;
         List<String> lines=new ArrayList<String>();
+        int count=0;
         while((line=br.readLine())!=null){
+            count++;
+            String[] line_split=line.split("\t");
 
-            String[] line_split=line.split(" ");
             if(isInteger(line_split[0])){
+                line=line_split[1];
                 String punc=line.substring(line.length()-2, line.length()-1);
-                line=line.substring(5, line.length()-2);
+                line=line.substring(1, line.length()-2);
                 line=line+" "+punc;
+                //System.out.println(line);
                 int e1Start=line.indexOf("<e1>");
                 int e1End=line.indexOf("</e1>");
                 int e2Start=line.indexOf("<e2>");
@@ -110,35 +118,38 @@ public class Preprocessor {
                     }
                 }
                 arg2End=spaces;
-                String bef="";
-                for(int i=0; i<arg1Start; i++){
-                    bef=bef+newLine.split(" ")[i]+" ";
-                }
-                String el1Compound=newLine.split(" ")[arg1Start];
-                for(int i=arg1Start+1; i<=arg1End; i++){
-                    el1Compound=el1Compound+"-"+newLine.split(" ")[i];
-                }
-                String bet=" ";
-                for(int i=arg1End+1; i<arg2Start; i++){
-                    bet=bet+newLine.split(" ")[i]+" ";
-                }
-                String el2Compound=newLine.split(" ")[arg2Start];
-                for(int i=arg2Start+1; i<=arg2End; i++){
-                    el2Compound=el2Compound+"-"+newLine.split(" ")[i];
-                }
-                String aft=" ";
-                for(int i=arg2End+1; i<newLine.split(" ").length; i++){
-                    aft=aft+newLine.split(" ")[i]+" ";
-                }
-                newLine=bef+el1Compound+bet+el2Compound+aft;
-                arg2Start=arg2Start-(arg1End-arg1Start);
-                arg1End=arg1Start;
-                arg2End=arg2Start;
+
+                //Uncomment all code in function to form entity compounds
+                //Change the arg1Start, arg1End, arg2Start, arg2End (L.146-L.218)
+//                String bef="";
+//                for(int i=0; i<arg1Start; i++){
+//                    bef=bef+newLine.split(" ")[i]+" ";
+//                }
+//                String el1Compound=newLine.split(" ")[arg1Start];
+//                for(int i=arg1Start+1; i<=arg1End; i++){
+//                    el1Compound=el1Compound+"-"+newLine.split(" ")[i];
+//                }
+//                String bet=" ";
+//                for(int i=arg1End+1; i<arg2Start; i++){
+//                    bet=bet+newLine.split(" ")[i]+" ";
+//                }
+//                String el2Compound=newLine.split(" ")[arg2Start];
+//                for(int i=arg2Start+1; i<=arg2End; i++){
+//                    el2Compound=el2Compound+"-"+newLine.split(" ")[i];
+//                }
+//                String aft=" ";
+//                for(int i=arg2End+1; i<newLine.split(" ").length; i++){
+//                    aft=aft+newLine.split(" ")[i]+" ";
+//                }
+//                newLine=bef+el1Compound+bet+el2Compound+aft;
+//                arg2Start=arg2Start-(arg1End-arg1Start);
+//                arg1End=arg1Start;
+//                arg2End=arg2Start;
                 lineArr=newLine.toCharArray();
 
                 for(int j=0; j<lineArr.length; j++){
                     if(isPunctuation(lineArr[j])){
-                        if(lineArr[j-1]!=' ' && lineArr[j+1]==' '){
+                        if(j>0 && lineArr[j-1]!=' ' && lineArr[j+1]==' '){
                             String splt1=newLine.substring(0, j);
                             String splt2=" "+lineArr[j];
                             String splt3=newLine.substring(j+1);
@@ -149,14 +160,29 @@ public class Preprocessor {
                             if(arg1Start>=pos){
                                 arg1Start++;
                                 arg2Start++;
+                                arg1End++;
+                                arg2End++;
                             }
                             else{
-                               if(arg2Start>=pos){
-                                   arg2Start++;
-                               }
+                                if(arg1End>=pos){
+                                    arg1End++;
+                                    arg2Start++;
+                                    arg2End++;
+                                }
+                                else{
+                                    if(arg2Start>=pos){
+                                        arg2Start++;
+                                        arg2End++;
+                                    }
+                                    else{
+                                        if(arg2End>=pos){
+                                            arg2End++;
+                                        }
+                                    }
+                                }
                             }
                         }
-                        if(lineArr[j-1]==' '){
+                        if(j==0 || lineArr[j-1]==' '){
                             if(j+1<lineArr.length && lineArr[j+1]!=' ') {
                                 String splt1=newLine.substring(0, j);
                                 String splt2=lineArr[j]+" ";
@@ -168,10 +194,25 @@ public class Preprocessor {
                                 if(arg1Start>=pos){
                                     arg1Start++;
                                     arg2Start++;
+                                    arg1End++;
+                                    arg2End++;
                                 }
                                 else{
-                                    if(arg2Start>=pos){
+                                    if(arg1End>=pos){
+                                        arg1End++;
                                         arg2Start++;
+                                        arg2End++;
+                                    }
+                                    else{
+                                        if(arg2Start>=pos){
+                                            arg2Start++;
+                                            arg2End++;
+                                        }
+                                        else{
+                                            if(arg2End>=pos){
+                                                arg2End++;
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -179,11 +220,12 @@ public class Preprocessor {
                         }
                     }
                 }
-                arg1End=arg1Start;
-                arg2End=arg2Start;
+//                arg1End=arg1Start;
+//                arg2End=arg2Start;
                 lines.add(newLine+"\n");
-                lines.add(arg1Start+"/"+arg2Start+"\n");
-
+                lines.add(arg1Start+"*"+arg1End+"/"+arg2Start+"*"+arg2End+"\n");
+//                System.out.println(newLine);
+//                System.out.println(arg1Start+"*"+arg1End+"/"+arg2Start+"*"+arg2End);
             }
             else{
                 if(!line.startsWith("Comment")){

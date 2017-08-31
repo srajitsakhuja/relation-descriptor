@@ -6,13 +6,17 @@ import java.util.List;
 
 public class Input {
 
-    int e1Pos;
-    int e2Pos;
+    int e1Start;
+    int e1End;
+    int e2Start;
+    int e2End;
     List<WordToken> wts;
 
-    Input(int e1, int e2, List<WordToken> wts){
-        this.e1Pos=e1;
-        this.e2Pos=e2;
+    Input(int e1Start, int e1End, int e2Start, int e2End, List<WordToken> wts){
+        this.e1Start=e1Start;
+        this.e1End=e1End;
+        this.e2Start=e2Start;
+        this.e2End=e2End;
         this.wts=wts;
     }
 
