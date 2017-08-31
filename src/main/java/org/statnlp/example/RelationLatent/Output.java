@@ -7,7 +7,7 @@ import java.util.Map;
 
 public class Output {
     public String relType;
-    public List<String> relTags;
+    //public List<String> relTags;
     protected enum RelType{
       other, cw, ce, eo, pp, cc, ia, ed, mc, ct;
     };
@@ -33,7 +33,7 @@ public class Output {
             suffix=rev?"_rev":"_norm";
         }
         this.relType=this.relTypeMap.get(relType)+suffix;
-        this.relTags=new ArrayList<String>(size);
+        //this.relTags=new ArrayList<String>(size);
     }
 
 }

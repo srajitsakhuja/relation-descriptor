@@ -9,6 +9,7 @@ import org.statnlp.hypergraph.GlobalNetworkParam;
 import org.statnlp.hypergraph.NetworkConfig;
 import org.statnlp.hypergraph.NetworkModel;
 
+import javax.management.relation.Relation;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,28 +25,34 @@ public class RelationLatentMain {
     public static void main(String...args) throws IOException, InterruptedException{
         //preprocessed file stored at processedFilePath
         //Preprocessor preprocessor=new Preprocessor(unprocessedFilePath, processedFilePath);
-        NetworkConfig.L2_REGULARIZATION_CONSTANT=Double.parseDouble(args[1]);
         NetworkConfig.NUM_THREADS=Integer.parseInt(args[0]);
+        NetworkConfig.L2_REGULARIZATION_CONSTANT=Double.parseDouble(args[1]);
         NetworkConfig.PARALLEL_FEATURE_EXTRACTION = true;
         NetworkConfig.AVOID_DUPLICATE_FEATURES = true;
         RelationInstance[] insts=readData(processedFilePath, true);
 
         List<RelationInstance> trainInsts=new ArrayList<RelationInstance>();
         List<RelationInstance> testInsts=new ArrayList<RelationInstance>();
-        for(int i=0; i<10; i++){
+        for(int i=0; i<840; i++){
             trainInsts.add(insts[i]);
+            System.out.println(trainInsts.get(i).input.wts.toString());
+            System.out.println(trainInsts.get(i).output.relType);
+            System.out.println();
         }
-        for(int i=20; i<insts.length; i++){
+        for(int i=840; i<insts.length; i++){
+            insts[i].setUnlabeled();
             testInsts.add(insts[i]);
         }
-        RelationInstance[] trainInstsArr=trainInsts.toArray(new RelationInstance[trainInsts.size()]);
 
         GlobalNetworkParam gnp=new GlobalNetworkParam();
         LatentFeatureManager fman=new LatentFeatureManager(gnp);
         LatentNetworkCompiler networkCompiler=new LatentNetworkCompiler(relTypes);
         NetworkModel model= DiscriminativeNetworkModel.create(fman, networkCompiler);
         model.train(trainInsts.toArray(new RelationInstance[trainInsts.size()]), iterCount);
-//        Instance[] results=model.decode(testInsts.toArray(new RelationInstance[testInsts.size()]));
+        Instance[] results=model.decode(testInsts.toArray(new RelationInstance[testInsts.size()]));
+        LatentEvaluator eval=new LatentEvaluator(results);
+        double metrics[]=eval.metrics;
+        System.out.println("Precision:"+metrics[0]+" Recall:"+metrics[1]+" F1-score:"+metrics[2]+" Accuracy"+metrics[3]);
     }
 
 

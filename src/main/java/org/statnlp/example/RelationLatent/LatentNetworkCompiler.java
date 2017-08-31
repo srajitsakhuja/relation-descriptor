@@ -15,13 +15,27 @@ public class LatentNetworkCompiler extends NetworkCompiler {
     private List<String> relTags=new ArrayList<String>();
     private Map<String, Integer> relType2Id=new HashMap<String, Integer>();
     private Map<String, Integer> relTag2Id=new HashMap<String, Integer>();
-    protected enum NodeType{
-        root, leaf, tag;
-    };
-
     static{
         NetworkIDMapper.setCapacity(new int[]{150, 100, 3, 100000});
     }
+    public LatentNetworkCompiler(List<String> relTypes) {
+        this.relTypes=relTypes;
+        for(int i=0; i<relTypes.size(); i++){
+            relType2Id.put(relTypes.get(i), i);
+            relTags.add("B-"+relTypes.get(i));
+            relTags.add("I-"+relTypes.get(i));
+            //System.out.print(relTypes.get(i));
+        }
+        relTags.add("O");
+        for(int i=0; i<relTags.size(); i++){
+            relTag2Id.put(relTags.get(i),i);
+        }
+    }
+    protected enum NodeType{
+        leaf, root, tag
+    };
+
+
     public long toLeafNode(){
         return toNode(0,0, NodeType.leaf, 0);
     }
@@ -32,21 +46,10 @@ public class LatentNetworkCompiler extends NetworkCompiler {
         return toNode(pos, tagId, NodeType.tag, chainId);
     }
     public long toNode(int pos, int tagId, NodeType nodeType, int chainId){
-        return NetworkIDMapper.toHybridNodeID(new int[]{pos, tagId, nodeType.ordinal(), chainId});
+        int nodeInfo[]={pos, tagId, nodeType.ordinal(), chainId};
+        return NetworkIDMapper.toHybridNodeID(nodeInfo);
     }
-    public LatentNetworkCompiler(List<String> relTypes) {
-        this.relTypes=relTypes;
-        for(int i=0; i<relTypes.size(); i++){
-            relType2Id.put(relTypes.get(i), i);
-            relTags.add("B-"+relTypes.get(i));
-            relTags.add("I-"+relTypes.get(i));
-            System.out.print(relTypes.get(i));
-        }
-        relTags.add("O");
-        for(int i=0; i<relTags.size(); i++){
-            relTag2Id.put(relTags.get(i),i);
-        }
-    }
+
     private boolean covers(int el, int left, int right){
         if(el>=left && el<=right){
             return true;
@@ -55,7 +58,6 @@ public class LatentNetworkCompiler extends NetworkCompiler {
     }
     @Override
     public Network compileLabeled(int networkId, Instance inst, LocalNetworkParam param) {
-        System.out.println("Reached here");
         BaseNetwork.NetworkBuilder<BaseNetwork> builder=BaseNetwork.NetworkBuilder.builder();
         RelationInstance myInst=(RelationInstance) inst;
         int size=myInst.size();
@@ -67,14 +69,14 @@ public class LatentNetworkCompiler extends NetworkCompiler {
         int e2=myInst.input.e2Pos;
         long child=leaf;
         String relType=myInst.output.relType;
-        System.out.println(relType);
+        //System.out.println(relType);
         int relId=this.relType2Id.get(relType);
         for(int left=0; left<size; left++){
             for(int right=left; right<inst.size(); right++){
                 if(covers(e1, left, right)  || covers(e2, left, right)){
                     continue;
                 }
-                //child=leaf;
+                child=leaf;
                 int chainId=relId*1000+left*100+right;
                 for(int pos=0; pos<size; pos++){
                     String tag;
@@ -107,6 +109,7 @@ public class LatentNetworkCompiler extends NetworkCompiler {
         BaseNetwork.NetworkBuilder builder=BaseNetwork.NetworkBuilder.builder();
         RelationInstance myInst=(RelationInstance)inst;
         int size=myInst.size();
+
         int e1=myInst.input.e1Pos;
         int e2=myInst.input.e2Pos;
         long leaf=toLeafNode();
