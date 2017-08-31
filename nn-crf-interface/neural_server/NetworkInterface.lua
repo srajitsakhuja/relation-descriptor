@@ -7,6 +7,7 @@ include 'nn-crf-interface/neural_server/AbstractNeuralNetwork.lua'
 include 'nn-crf-interface/neural_server/MultiLayerPerceptron.lua'
 include 'nn-crf-interface/neural_server/BidirectionalLSTM.lua'
 include 'nn-crf-interface/neural_server/SimpleBiLSTM.lua'
+include 'nn-crf-interface/neural_server/RelationLSTM.lua'
 include 'nn-crf-interface/neural_server/ContinuousFeature.lua'
 include 'nn-crf-interface/neural_server/OneHot.lua'
 include 'nn-crf-interface/neural_server/Utils.lua'
@@ -56,6 +57,8 @@ function initialize(javadata, ...)
             net = BidirectionalLSTM(optimizeInTorch, gpuid)
         elseif networkClass == "SimpleBiLSTM" then
             net = SimpleBiLSTM(optimizeInTorch, gpuid)
+        elseif networkClass == "RelationLSTM" then
+            net = RelationLSTM(optimizeInTorch, gpuid)
         elseif networkClass == "ContinuousFeature" then
             net = ContinuousFeature(optimizeInTorch, gpuid)
         else
@@ -81,14 +84,14 @@ function forward(training, batchInputIds)
     local timer = torch.Timer()
     net:forward(training, batch)
     local time = timer:time().real
-    print(string.format("Forward took %.4fs", time))
+    --print(string.format("Forward took %.4fs", time))
 end
 
 function backward()
     local timer = torch.Timer()
     net:backward()
     local time = timer:time().real
-    print(string.format("Backward took %.4fs", time))
+    --print(string.format("Backward took %.4fs", time))
 end
 
 function save_model(prefix)
