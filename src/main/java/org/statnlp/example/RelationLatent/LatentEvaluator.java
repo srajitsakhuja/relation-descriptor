@@ -29,7 +29,7 @@ public class LatentEvaluator {
                     if(predTag.equals(relType)){
                         matches=true;
                     }
-                    if(predTag!="o"){
+                    if(!predTag.equals("o")){
                         isPositive=true;
                     }
                     break;
@@ -37,6 +37,7 @@ public class LatentEvaluator {
             }
             System.out.println(isPositive);
             System.out.println(matches);
+            System.out.println();
             if(isPositive){
                 if(matches){ tp++; }
                 else{fp++;}

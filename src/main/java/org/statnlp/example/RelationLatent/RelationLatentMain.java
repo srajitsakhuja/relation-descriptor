@@ -17,42 +17,56 @@ import java.util.List;
 public class RelationLatentMain {
     private static String unprocessedFilePath="data/RelDataSet/sem-eval-task8.txt";
     private static String processedFilePath="data/RelDataSet/sem-eval-task8-processed.txt";
+    private static int fileStart=1;
+    private static int fileEnd=10;
+    private static String trainFPath="data/sem-eval/sem-eval-train";
+    private static String testFPath="data/sem-eval/sem-eval-test";
     private static List<String> relTypes=new ArrayList<String>();
     private static int iterCount=1000;
     private static int threadCount;
     private static double L2;
 
     public static void main(String...args) throws IOException, InterruptedException{
-        //preprocessed file stored at processedFilePath
-        //Preprocessor preprocessor=new Preprocessor(unprocessedFilePath, processedFilePath);
-        NetworkConfig.NUM_THREADS=Integer.parseInt(args[0]);
-        NetworkConfig.L2_REGULARIZATION_CONSTANT=Double.parseDouble(args[1]);
+        //Param initialisation
+        fileStart=Integer.parseInt(args[0]);
+        fileEnd=Integer.parseInt(args[1]);
+        NetworkConfig.NUM_THREADS=Integer.parseInt(args[2]);
+        NetworkConfig.L2_REGULARIZATION_CONSTANT=Double.parseDouble(args[3]);
         NetworkConfig.PARALLEL_FEATURE_EXTRACTION = true;
         NetworkConfig.AVOID_DUPLICATE_FEATURES = true;
-        RelationInstance[] insts=readData(processedFilePath, true);
 
-        List<RelationInstance> trainInsts=new ArrayList<RelationInstance>();
-        List<RelationInstance> testInsts=new ArrayList<RelationInstance>();
-        for(int i=0; i<840; i++){
-            trainInsts.add(insts[i]);
-            System.out.println(trainInsts.get(i).input.wts.toString());
-            System.out.println(trainInsts.get(i).output.relType);
-            System.out.println();
-        }
-        for(int i=840; i<insts.length; i++){
-            insts[i].setUnlabeled();
-            testInsts.add(insts[i]);
-        }
+        double prec_av=0.0;
+        double rec_av=0.0;
+        double f_av=0.0;
+        double acc_av=0.0;
 
-        GlobalNetworkParam gnp=new GlobalNetworkParam();
-        LatentFeatureManager fman=new LatentFeatureManager(gnp);
-        LatentNetworkCompiler networkCompiler=new LatentNetworkCompiler(relTypes);
-        NetworkModel model= DiscriminativeNetworkModel.create(fman, networkCompiler);
-        model.train(trainInsts.toArray(new RelationInstance[trainInsts.size()]), iterCount);
-        Instance[] results=model.decode(testInsts.toArray(new RelationInstance[testInsts.size()]));
-        LatentEvaluator eval=new LatentEvaluator(results);
-        double metrics[]=eval.metrics;
-        System.out.println("Precision:"+metrics[0]+" Recall:"+metrics[1]+" F1-score:"+metrics[2]+" Accuracy"+metrics[3]);
+        for(int file=fileStart; file<=fileEnd; file++){
+            String testPath=testFPath+file;
+            String trainPath=trainFPath+file;
+            RelationInstance[] trainInsts=readData(trainPath, true);
+            RelationInstance[] testInsts=readData(testPath, false);
+            System.out.println(trainInsts.length);
+            System.out.println(testInsts.length);
+
+            GlobalNetworkParam gnp=new GlobalNetworkParam();
+            LatentFeatureManager fman=new LatentFeatureManager(gnp);
+            LatentNetworkCompiler networkCompiler=new LatentNetworkCompiler(relTypes);
+            NetworkModel model= DiscriminativeNetworkModel.create(fman, networkCompiler);
+            model.train(trainInsts, iterCount);
+            Instance[] results=model.decode(testInsts);
+            LatentEvaluator eval=new LatentEvaluator(results);
+            double metrics[]=eval.metrics;
+            System.out.println("Precision:"+metrics[0]+" Recall:"+metrics[1]+" F1-score:"+metrics[2]+" Accuracy:"+metrics[3]);
+            prec_av+=metrics[0]; rec_av+=metrics[1]; f_av+=metrics[2]; acc_av+=metrics[3];
+        }
+        prec_av/=(fileEnd-fileStart+1);
+        rec_av/=(fileEnd-fileStart+1);
+        f_av/=(fileEnd-fileStart+1);
+        acc_av/=(fileEnd-fileStart+1);
+        System.out.println("AVERAGE VALUES:");
+        System.out.println("Precision:"+prec_av+" Recall:"+rec_av+" F1-score:"+f_av+" Accuracy:"+acc_av);
+
+
     }
 
 
@@ -89,6 +103,9 @@ public class RelationLatentMain {
                     RelationInstance inst=new RelationInstance(count, 1.0,input, output);
                     if(isTraining){
                         inst.setLabeled();
+                    }
+                    else{
+                        inst.setUnlabeled();
                     }
                     insts.add(inst);
                 }
