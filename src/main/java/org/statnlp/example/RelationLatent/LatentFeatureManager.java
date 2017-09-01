@@ -15,8 +15,11 @@ public class LatentFeatureManager extends FeatureManager {
 	
 	private static final long serialVersionUID = -9053492051283606458L;
 	
-	public LatentFeatureManager(GlobalNetworkParam param_g) {
+	private boolean zero_digit = false;
+	
+	public LatentFeatureManager(GlobalNetworkParam param_g, boolean zero_digit) {
         super(param_g);
+        this.zero_digit = zero_digit;
     }
 
     private enum FeatType{
@@ -64,6 +67,9 @@ public class LatentFeatureManager extends FeatureManager {
     	StringBuilder sb = new StringBuilder();
     	for (int i = 0; i < wts.size(); i++) {
     		String curr = i == 0 ? wts.get(i).getForm()  : " " + wts.get(i).getForm();
+    		if (this.zero_digit) {
+    			curr = curr.replaceAll("\\d", "0");
+    		}
     		sb.append(curr);
     	}
     	return sb.toString();

@@ -19,17 +19,20 @@ public class RelationLatentMain {
     private static String trainPath="data/sem-eval/trainFileProcessed.txt";
     private static String testPath="data/sem-eval/testFileProcessed.txt";
     private static List<String> relTypes=new ArrayList<String>();
-    private static int iterCount=1000;
-    private static int trainNum = 2;
-    private static int testNum = 2;
+    private static int iterCount= 4000;
+    private static int trainNum = 1000;
+    private static int testNum = -1;
+    private static boolean zero_digit = true;
 
     public static void main(String...args) throws IOException, InterruptedException{
-    	NetworkConfig.NUM_THREADS = 5;
-        NetworkConfig.L2_REGULARIZATION_CONSTANT= 0.01;
+    	NetworkConfig.NUM_THREADS = 40;
+        NetworkConfig.L2_REGULARIZATION_CONSTANT= 0.05;
 
         NetworkConfig.PARALLEL_FEATURE_EXTRACTION = true;
         NetworkConfig.AVOID_DUPLICATE_FEATURES = true;
         NetworkConfig.USE_NEURAL_FEATURES = true;
+        NetworkConfig.OS = "linux";
+        zero_digit = true;
 
         //Importing test and train data
         RelationInstance[] trainInsts=readData(trainPath, true, trainNum);
@@ -40,12 +43,12 @@ public class RelationLatentMain {
         System.out.println(relTypes.toString());
         List<NeuralNetworkCore> nets = new ArrayList<>();
         if (NetworkConfig.USE_NEURAL_FEATURES) {
-        	nets.add(new RelationLSTM(100, 2 * relTypes.size() + 1, -1, "random"));
+        	nets.add(new RelationLSTM(300, 2 * relTypes.size() + 1, -1, "random"));
         }
         GlobalNeuralNetworkParam gnnp = new GlobalNeuralNetworkParam(nets);
         GlobalNetworkParam gnp=new GlobalNetworkParam(OptimizerFactory.getLBFGSFactory() ,gnnp);
 
-        LatentFeatureManager fman=new LatentFeatureManager(gnp);
+        LatentFeatureManager fman=new LatentFeatureManager(gnp, zero_digit);
         LatentNetworkCompiler networkCompiler=new LatentNetworkCompiler(relTypes);
         NetworkModel model= DiscriminativeNetworkModel.create(fman, networkCompiler);
         model.train(trainInsts, iterCount);
