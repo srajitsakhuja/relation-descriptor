@@ -70,6 +70,8 @@ function RelationLSTM:createNetwork()
     if data.embedding ~= nil then
         if data.embedding == 'glove' then
             sharedLookupTable = loadGlove(self.idx2word, hiddenSize, true)
+        elseif data.embedding == 'google' then
+            sharedLookupTable = loadGoogle(self.idx2word, hiddenSize, true)
         else -- unknown/no embedding, defaults to random init
             print ("unknown embedding type, use random embedding..")
             sharedLookupTable = nn.LookupTableMaskZero(self.vocabSize, hiddenSize)

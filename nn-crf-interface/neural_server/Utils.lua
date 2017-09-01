@@ -67,6 +67,43 @@ function loadGlove(wordList, dim, sharedLookupTable)
     return ltw
 end
 
+
+function loadGoogle(wordList, dim, sharedLookupTable)
+    sharedLookupTable = sharedLookupTable or false
+    if google == nil then
+        ---- TODO: need to make this path more general later.
+        google = require 'nn-crf-interface/neural_server/google/Google'
+    end
+    google:load(dim)
+
+    local ltw
+    local maskZero = false
+    if sharedLookupTable then
+        ltw = nn.LookupTableMaskZero(#wordList, dim)
+        maskZero = true
+    else 
+        ltw = nn.LookupTable(#wordList, dim)
+    end
+    for i=1,#wordList do
+        local emb = torch.Tensor(dim)
+
+        local p_emb = google:word2vec(wordList[i])
+        if p_emb == nil then
+            print("not found word in word2vec, shouldn't happen")
+        end
+        for j=1,dim do
+            emb[j] = p_emb[j]
+        end
+        if maskZero then
+            --becareful about this, check nn.LookupTableMaskZero documentation
+            ltw.weight[i + 1] = emb
+        else
+            ltw.weight[i] = emb
+        end
+    end
+    return ltw
+end
+
 function loadBansal(wordList)
     if bansal == nil then
         bansal = require 'syntacticEmbeddings/bansal'

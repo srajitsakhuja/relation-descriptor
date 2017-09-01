@@ -26,15 +26,27 @@ public class RelationLatentMain {
     private static boolean fixEmbedding = true;
 
     public static void main(String...args) throws IOException, InterruptedException{
-    	NetworkConfig.NUM_THREADS = 5;
-        NetworkConfig.L2_REGULARIZATION_CONSTANT= 0.05;
+    	
+        trainNum = 2000;
+        testNum = -1;
+        int threadNum = 5;
+        double l2 = 0.05;
+        zero_digit = true;
+        fixEmbedding = true;
+        String embedding = "google";
+        int embeddingDimension = 300;
+        int gpuId = -1;
+        iterCount = 4000;
+        String os = "osx";
+        
+        
+        NetworkConfig.NUM_THREADS = threadNum;
+        NetworkConfig.L2_REGULARIZATION_CONSTANT= l2;
 
         NetworkConfig.PARALLEL_FEATURE_EXTRACTION = true;
         NetworkConfig.AVOID_DUPLICATE_FEATURES = true;
         NetworkConfig.USE_NEURAL_FEATURES = true;
-        NetworkConfig.OS = "osx";
-        zero_digit = true;
-        fixEmbedding = true;
+        NetworkConfig.OS = os;
 
         //Importing test and train data
         RelationInstance[] trainInsts=readData(trainPath, true, trainNum);
@@ -45,7 +57,8 @@ public class RelationLatentMain {
         System.out.println(relTypes.toString());
         List<NeuralNetworkCore> nets = new ArrayList<>();
         if (NetworkConfig.USE_NEURAL_FEATURES) {
-        	nets.add(new RelationLSTM(50, 2 * relTypes.size() + 1, -1, "random", fixEmbedding));
+        	int numLabels = 2 * relTypes.size() + 1;
+        	nets.add(new RelationLSTM(embeddingDimension, numLabels, gpuId, embedding, fixEmbedding));
         }
         GlobalNeuralNetworkParam gnnp = new GlobalNeuralNetworkParam(nets);
         GlobalNetworkParam gnp=new GlobalNetworkParam(OptimizerFactory.getLBFGSFactory() ,gnnp);
@@ -90,7 +103,7 @@ public class RelationLatentMain {
                 }
                 else if(lnum%5==4){
                     count++;
-                    if(count>lim){break;}
+                    if(lim != -1 && count>lim){break;}
                     Output output=new Output(line, wts.size());
                     if(!relTypes.contains(output.relType) && isTraining){
                         relTypes.add(output.relType);
