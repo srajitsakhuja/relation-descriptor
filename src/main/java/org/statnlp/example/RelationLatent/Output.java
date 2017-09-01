@@ -19,7 +19,7 @@ public class Output {
         this.relTypeMap.put("Entity-Destination", "ed");
         this.relTypeMap.put("Component-Whole", "cw");
         this.relTypeMap.put("Member-Collection", "mc");
-        this.relTypeMap.put("Communication-Topic", "ct");
+        this.relTypeMap.put("Message-Topic", "mt");
         this.relTypeMap.put("Other", "o");
     }
     Output(String relType, int size){
