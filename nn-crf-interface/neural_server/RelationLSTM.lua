@@ -16,6 +16,7 @@ function RelationLSTM:initialize(javadata, ...)
     data.clipping = javadata:get("clipping")
     self.numLabels = javadata:get("numLabels")
     data.embedding = javadata:get("embedding")
+    self.fixEmbedding = javadata:get("fixEmbedding")
     local modelPath = javadata:get("nnModelFile")
     local isTraining = javadata:get("isTraining")
     data.isTraining = isTraining
@@ -27,6 +28,9 @@ function RelationLSTM:initialize(javadata, ...)
     if self.net == nil and isTraining then
         -- means is initialized process and we don't have the input yet.
         self:createNetwork()
+        if self.fixEmbedding then
+            print(self.parallelInput)
+        end
         print(self.net)
     end
     if self.net == nil then 
@@ -61,6 +65,8 @@ function RelationLSTM:createNetwork()
     local data = self.data
     local hiddenSize = data.hiddenSize
     local sharedLookupTable
+    local forwardInputLayer
+    local backwardInputLayer
     if data.embedding ~= nil then
         if data.embedding == 'glove' then
             sharedLookupTable = loadGlove(self.idx2word, hiddenSize, true)
@@ -73,21 +79,33 @@ function RelationLSTM:createNetwork()
         print ("Not using any embedding, just use random embedding")
         sharedLookupTable = nn.LookupTableMaskZero(self.vocabSize, hiddenSize)
     end
+    if self.fixEmbedding then 
+        sharedLookupTable.accGradParameters = function() end
+    end
+
     -- forward rnn
     local fwdLSTM = nn.FastLSTM(hiddenSize, hiddenSize):maskZero(1)
     print("number of lstm parameters:"..fwdLSTM:getParameters():nElement())
     local fwd = nn.Sequential()
-       :add(sharedLookupTable)
-       :add(fwdLSTM)
-
+    if self.fixEmbedding then
+        forwardInputLayer = nn.Sequential():add(sharedLookupTable)
+    else
+        fwd:add(sharedLookupTable)
+    end
+    fwd:add(fwdLSTM)
     -- internally, rnn will be wrapped into a Recursor to make it an AbstractRecurrent instance.
     local fwdSeq = nn.Sequencer(fwd)
 
     -- backward rnn (will be applied in reverse order of input sequence)
-    local bwd, bwdSeq
-    bwd = nn.Sequential()
+    local bwd = nn.Sequential()
+    local bwdSeq
+    if self.fixEmbedding then
+        backwardInputLayer = nn.Sequential()
            :add(sharedLookupTable:sharedClone())
-           :add(nn.FastLSTM(hiddenSize, hiddenSize):maskZero(1))
+    else
+        bwd:add(sharedLookupTable:sharedClone())
+    end
+    bwd:add(nn.FastLSTM(hiddenSize, hiddenSize):maskZero(1))
            
     bwdSeq = nn.Sequential()
             :add(nn.Sequencer(bwd))
@@ -103,6 +121,12 @@ function RelationLSTM:createNetwork()
     local parallel = nn.ParallelTable()
     parallel:add(fwdSeq)
     parallel:add(bwdSeq)
+
+    if self.fixEmbedding then
+        self.parallelInput = nn.ParallelTable()
+        self.parallelInput:add(nn.Sequencer(forwardInputLayer))
+        self.parallelInput:add(nn.Sequencer(backwardInputLayer))
+    end
     
     local brnn = nn.Sequential()
        :add(parallel)
@@ -116,7 +140,12 @@ function RelationLSTM:createNetwork()
     local rnn = nn.Sequential()
         :add(brnn)
         :add(nn.Sequencer(finalTanh)) 
-    if self.gpuid >= 0 then rnn:cuda() end
+    if self.gpuid >= 0 then 
+        if self.fixEmbedding then
+            self.parallelInput:cuda()
+        end
+        rnn:cuda() 
+    end
     self.net = rnn
 end
 
@@ -181,7 +210,11 @@ function RelationLSTM:forward(isTraining, batchInputIds)
         self.params:copy(self.paramsDouble:cuda())
     end
     local nnInput = self:getForwardInput(isTraining, batchInputIds)
-    local output_table = self.net:forward(nnInput)
+    local nnInput_x = nnInput
+    if self.fixEmbedding then
+        nnInput_x =  self.parallelInput:forward(nnInput)
+    end
+    local output_table = self.net:forward(nnInput_x)
     if self.gpuid >= 0 then
         nn.utils.recursiveType(output_table, 'torch.DoubleTensor')
     end 
@@ -240,7 +273,11 @@ function RelationLSTM:backward()
     if self.gpuid >= 0 then
         nn.utils.recursiveType(self.gradOutput, 'torch.CudaTensor')
     end
-    self.net:backward(backwardInput, self.gradOutput)
+    local nnInput_x = backwardInput
+    if self.fixEmbedding then
+        nnInput_x =  self.parallelInput:forward(backwardInput)
+    end
+    self.net:backward(nnInput_x, self.gradOutput)
     if self.doOptimization then
         self.optimizer(self.feval, self.params, self.optimState)
     else

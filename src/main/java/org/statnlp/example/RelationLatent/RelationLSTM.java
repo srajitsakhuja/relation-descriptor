@@ -7,12 +7,13 @@ import org.statnlp.hypergraph.neural.NeuralNetworkCore;
 public class RelationLSTM extends NeuralNetworkCore {
 	
 	
-	public RelationLSTM(int hiddenSize, int numLabels, int gpuId, String embedding) {
+	public RelationLSTM(int hiddenSize, int numLabels, int gpuId, String embedding, boolean fixEmbedding) {
 		super(numLabels);
 		config.put("class", "RelationLSTM");
         config.put("hiddenSize", hiddenSize);
         config.put("numLabels", numLabels);
         config.put("embedding", embedding);
+        config.put("fixEmbedding", fixEmbedding);
         config.put("gpuid", gpuId);
 	}
 
