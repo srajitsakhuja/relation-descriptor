@@ -18,7 +18,7 @@ public class LatentFeatureManager extends FeatureManager {
     }
 
     private enum FeatType{
-      unigram, bigram, transition;
+      unigram, bigram, transition, entity
     };
     @Override
     protected FeatureArray extract_helper(Network network, int parent_k, int[] children_k, int children_k_index) {
@@ -75,6 +75,8 @@ public class LatentFeatureManager extends FeatureManager {
         List<Integer> fs1 = new ArrayList<>();
         List<Integer> fs2 = new ArrayList<>();
         List<Integer> fs3 = new ArrayList<>();
+        List<Integer> fs4 = new ArrayList<>();
+
 
         //FIRST-ORDER FEATURES
         //UNIGRAM FEATURES
@@ -99,12 +101,35 @@ public class LatentFeatureManager extends FeatureManager {
         fs2.add(_param_g.toFeature(network, FeatType.bigram.name()+"*po0+1",  prevTag+" "+currTag, POS+" "+rPOS));
         fs2.add(_param_g.toFeature(network, FeatType.bigram.name()+"*po+1+2",  prevTag+" "+currTag, rPOS+" "+rrPOS));
 
+        //TRANSITION FEATURES
         fs3.add(_param_g.toFeature(network, FeatType.transition.name(), currTag+"", prevTag+""));
-        
+
+        //ENTITY FEATURES=>Implemented using bag of words approach
+        if(pos==inst.size()-1){
+            String relType=inst.output.relType;
+            int e1Start=inst.input.e1Start;
+            int e1End=inst.input.e1End;
+            int e2Start=inst.input.e2Start;
+            int e2End=inst.input.e2End;
+            for(int i=e1Start; i<=e1End; i++){
+                //int relPos=i-(e1End-e1Start);
+                fs4.add(_param_g.toFeature(network, FeatType.entity.name()+"-1", relType, inst.input.wts.get(i).getForm()));
+                fs4.add(_param_g.toFeature(network, FeatType.entity.name()+"-1", relType, inst.input.wts.get(i).getTag()));
+            }
+            for(int i=e2Start; i<=e2End; i++){
+                //int relPos=i-(e2End-e2Start);
+                fs4.add(_param_g.toFeature(network, FeatType.entity.name()+"-2", relType, inst.input.wts.get(i).getForm()));
+                fs4.add(_param_g.toFeature(network, FeatType.entity.name()+"-2", relType, inst.input.wts.get(i).getTag()));
+            }
+        }
+
         FeatureArray fa1  = this.createFeatureArray(network, fs1);
         FeatureArray fa2  = this.createFeatureArray(network, fs2);
         FeatureArray fa3  = this.createFeatureArray(network, fs3);
+        FeatureArray fa4  = this.createFeatureArray(network, fs4);
+
         fa1.addNext(fa2).addNext(fa3);
+        fa1.addNext(fa4);
         
         return fa1;
     }
