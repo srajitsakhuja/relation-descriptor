@@ -25,13 +25,13 @@ public class LatentNetworkCompiler extends NetworkCompiler {
     }
     public LatentNetworkCompiler(List<String> relTypes) {
         this.relTypes=relTypes;
+        relTags.add("O");
         for(int i=0; i<relTypes.size(); i++){
             relType2Id.put(relTypes.get(i), i);
             relTags.add("B-"+relTypes.get(i));
             relTags.add("I-"+relTypes.get(i));
             //System.out.print(relTypes.get(i));
         }
-        relTags.add("O");
         for(int i=0; i<relTags.size(); i++){
             relTag2Id.put(relTags.get(i),i);
         }

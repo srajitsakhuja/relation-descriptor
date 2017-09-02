@@ -1,18 +1,22 @@
 package org.statnlp.example.RelationLatent;
-import java.io.BufferedReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.io.Serializable;
 
 import org.statnlp.commons.io.RAWF;
 import org.statnlp.commons.types.Instance;
 import org.statnlp.commons.types.WordToken;
+import org.statnlp.example.RelationDescriptor.RelationFeatureManager;
+import org.statnlp.example.RelationDescriptor.RelationNetworkCompiler;
 import org.statnlp.hypergraph.DiscriminativeNetworkModel;
 import org.statnlp.hypergraph.GlobalNetworkParam;
 import org.statnlp.hypergraph.NetworkConfig;
 import org.statnlp.hypergraph.NetworkModel;
 
-public class RelationLatentMain {
+public class RelationLatentMain{
+    private static final long serialVersionUID = 2046107789709874963L;
+
     private static String unprocessedFilePath="data/sem-eval/testFile.txt";
     private static String processedFilePath="data/sem-eval/testFileProcessed.txt";
     private static int trainCount;
@@ -23,7 +27,9 @@ public class RelationLatentMain {
     private static int iterCount=1000;
     private static int threadCount;
     private static double L2;
-
+    private static boolean readModel;
+    private static boolean saveModel;
+    private static String modelFile;
     public static void main(String...args) throws IOException, InterruptedException{
         //Preprocessing to add POSTags and parsing the data to usable form
         //Preprocessor processor=new Preprocessor(unprocessedFilePath, processedFilePath);
@@ -33,21 +39,42 @@ public class RelationLatentMain {
         testCount=Integer.parseInt(args[1]);
         NetworkConfig.NUM_THREADS=Integer.parseInt(args[2]);
         NetworkConfig.L2_REGULARIZATION_CONSTANT=Double.parseDouble(args[3]);
+        readModel=Boolean.parseBoolean(args[4]);
+        saveModel=Boolean.parseBoolean(args[5]);
+        modelFile="data/sem-eval/"+args[6];
+
+
         NetworkConfig.PARALLEL_FEATURE_EXTRACTION = true;
         NetworkConfig.AVOID_DUPLICATE_FEATURES = true;
-
         //Importing test and train data
         RelationInstance[] trainInsts=readData(trainPath, true, trainCount);
         RelationInstance[] testInsts=readData(testPath, false, testCount);
-        System.out.println(trainInsts.length);
-        System.out.println(testInsts.length);
 
         //build, train, test repeat...
-        GlobalNetworkParam gnp=new GlobalNetworkParam();
-        LatentFeatureManager fman=new LatentFeatureManager(gnp);
-        LatentNetworkCompiler networkCompiler=new LatentNetworkCompiler(relTypes);
-        NetworkModel model= DiscriminativeNetworkModel.create(fman, networkCompiler);
-        model.train(trainInsts, iterCount);
+        NetworkModel model=null;
+
+        if(!readModel) {
+            GlobalNetworkParam gnp = new GlobalNetworkParam();
+            LatentFeatureManager fman = new LatentFeatureManager(gnp);
+            LatentNetworkCompiler networkCompiler = new LatentNetworkCompiler(relTypes);
+            model = DiscriminativeNetworkModel.create(fman, networkCompiler);
+            model.train(trainInsts, iterCount);
+        }
+        else{
+            try {
+                ObjectInputStream ois = (ObjectInputStream) RAWF.objectReader(modelFile);
+                model = (NetworkModel) ois.readObject();
+                ois.close();
+            }
+            catch(Exception e){
+                System.out.println(e);
+            }
+        }
+        if(saveModel){
+            ObjectOutputStream oos=RAWF.objectWriter(modelFile);
+            oos.writeObject(model);
+            oos.close();
+        }
         Instance[] results=model.decode(testInsts);
         LatentEvaluator eval=new LatentEvaluator(results);
         double metrics[]=eval.metrics;
