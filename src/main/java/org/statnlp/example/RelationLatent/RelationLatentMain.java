@@ -47,11 +47,11 @@ public class RelationLatentMain{
 
 
         //Importing test and train data
-        boolean reduceSpace=true;
-        boolean tagCategorize=true;
+        boolean reduceSpace=false;
+        boolean tagCategorize=false;
         RelationInstance[] trainInsts=readData(trainPath, true, trainCount, tagCategorize, reduceSpace);
         RelationInstance[] testInsts=readData(testPath, false, testCount, tagCategorize, reduceSpace);
-
+        printInst(testInsts);
         //build, train, test repeat...
         NetworkModel model=null;
         NetworkConfig.PARALLEL_FEATURE_EXTRACTION = true;

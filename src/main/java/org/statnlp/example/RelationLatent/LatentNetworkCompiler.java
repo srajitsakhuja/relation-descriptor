@@ -80,7 +80,8 @@ public class LatentNetworkCompiler extends NetworkCompiler {
         int relId=this.relType2Id.get(relType);
         for(int left=0; left<size; left++){
             for(int right=left; right<inst.size(); right++){
-                if(covers(e1Start, e1End, left, right)  || covers(e2Start, e2End, left, right)){
+                //if(covers(e1Start, e1End, left, right)  || covers(e2Start, e2End, left, right)){
+                if(!(e1End<left && e2Start>right)){
                     continue;
                 }
                 child=leaf;
@@ -132,9 +133,11 @@ public class LatentNetworkCompiler extends NetworkCompiler {
             int relId=this.relType2Id.get(relType);
             for(int left=0; left<size; left++){
                 for(int right=left; right<size; right++){
-                    if(covers(e1Start, e1End, left, right)  || covers(e2Start, e2End, left, right)){
+                    //if(covers(e1Start, e1End, left, right)  || covers(e2Start, e2End, left, right)){
+                    if(!(e1End<left && e2Start>right)){
                         continue;
                     }
+
                     child=leaf;
                     int chainId=relId*1000+left*100+right;
                     for(int pos=0; pos<size; pos++){
@@ -170,7 +173,9 @@ public class LatentNetworkCompiler extends NetworkCompiler {
         RelationInstance inst=(RelationInstance)unlablledNetwork.getInstance();
         int size=inst.size();
         long root=toRootNode(size);
+        System.out.println("reached+++++++"+inst.getInstanceId());
         int rootIdx= Arrays.binarySearch(unlablledNetwork.getAllNodes(), root);
+        System.out.println("not reached++++++"+inst.getInstanceId());
         List<String> predictions=new ArrayList<String>(size);
         for(int i=0; i<size; i++){
             int child=unlablledNetwork.getMaxPath(rootIdx)[0];
