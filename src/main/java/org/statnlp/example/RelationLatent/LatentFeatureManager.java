@@ -50,26 +50,26 @@ public class LatentFeatureManager extends FeatureManager {
         
         //ZEROTH-ORDER FEATURES
 //        //UNIGRAM FEATURES
-//        fs.add(_param_g.toFeature(network, FeatType.unigram.name()+"-w0",  currTag+"", word));
-//        fs.add(_param_g.toFeature(network, FeatType.unigram.name()+"-w-1",  currTag+"", lword));
-//        fs.add(_param_g.toFeature(network, FeatType.unigram.name()+"-w-2",  currTag+"", llword));
-//        fs.add(_param_g.toFeature(network, FeatType.unigram.name()+"-w+1",  currTag+"", rword));
-//        fs.add(_param_g.toFeature(network, FeatType.unigram.name()+"-w+2",  currTag+"", rrword));
-//        fs.add(_param_g.toFeature(network, FeatType.unigram.name()+"-po0",  currTag+"", POS));
-//        fs.add(_param_g.toFeature(network, FeatType.unigram.name()+"-po-1",  currTag+"", lPOS));
-//        fs.add(_param_g.toFeature(network, FeatType.unigram.name()+"-po-2",  currTag+"", llPOS));
-//        fs.add(_param_g.toFeature(network, FeatType.unigram.name()+"-po+1",  currTag+"", rPOS));
-//        fs.add(_param_g.toFeature(network, FeatType.unigram.name()+"-po+2",  currTag+"", rrPOS));
-//
-//        //BIGRAM FEATURES
-//        fs.add(_param_g.toFeature(network, FeatType.bigram.name()+"-w-2-1",  currTag+"", llword+" "+lword));
-//        fs.add(_param_g.toFeature(network, FeatType.bigram.name()+"-w-10",  currTag+"", lword+" "+word));
-//        fs.add(_param_g.toFeature(network, FeatType.bigram.name()+"-w0+1",  currTag+"", word+" "+rword));
-//        fs.add(_param_g.toFeature(network, FeatType.bigram.name()+"-w+1+2",  currTag+"", rword+" "+rrword));
-//        fs.add(_param_g.toFeature(network, FeatType.bigram.name()+"-po-2-1",  currTag+"", llPOS+" "+lPOS));
-//        fs.add(_param_g.toFeature(network, FeatType.bigram.name()+"-po-10",  currTag+"", lPOS+" "+POS));
-//        fs.add(_param_g.toFeature(network, FeatType.bigram.name()+"-po0+1",  currTag+"", POS+" "+rPOS));
-//        fs.add(_param_g.toFeature(network, FeatType.bigram.name()+"-po+1+2",  currTag+"", rPOS+" "+rrPOS));
+        fs.add(_param_g.toFeature(network, FeatType.unigram.name()+"-w0",  currTag+"", word));
+        fs.add(_param_g.toFeature(network, FeatType.unigram.name()+"-w-1",  currTag+"", lword));
+        fs.add(_param_g.toFeature(network, FeatType.unigram.name()+"-w-2",  currTag+"", llword));
+        fs.add(_param_g.toFeature(network, FeatType.unigram.name()+"-w+1",  currTag+"", rword));
+        fs.add(_param_g.toFeature(network, FeatType.unigram.name()+"-w+2",  currTag+"", rrword));
+        fs.add(_param_g.toFeature(network, FeatType.unigram.name()+"-po0",  currTag+"", POS));
+        fs.add(_param_g.toFeature(network, FeatType.unigram.name()+"-po-1",  currTag+"", lPOS));
+        fs.add(_param_g.toFeature(network, FeatType.unigram.name()+"-po-2",  currTag+"", llPOS));
+        fs.add(_param_g.toFeature(network, FeatType.unigram.name()+"-po+1",  currTag+"", rPOS));
+        fs.add(_param_g.toFeature(network, FeatType.unigram.name()+"-po+2",  currTag+"", rrPOS));
+
+        //BIGRAM FEATURES
+        fs.add(_param_g.toFeature(network, FeatType.bigram.name()+"-w-2-1",  currTag+"", llword+" "+lword));
+        fs.add(_param_g.toFeature(network, FeatType.bigram.name()+"-w-10",  currTag+"", lword+" "+word));
+        fs.add(_param_g.toFeature(network, FeatType.bigram.name()+"-w0+1",  currTag+"", word+" "+rword));
+        fs.add(_param_g.toFeature(network, FeatType.bigram.name()+"-w+1+2",  currTag+"", rword+" "+rrword));
+        fs.add(_param_g.toFeature(network, FeatType.bigram.name()+"-po-2-1",  currTag+"", llPOS+" "+lPOS));
+        fs.add(_param_g.toFeature(network, FeatType.bigram.name()+"-po-10",  currTag+"", lPOS+" "+POS));
+        fs.add(_param_g.toFeature(network, FeatType.bigram.name()+"-po0+1",  currTag+"", POS+" "+rPOS));
+        fs.add(_param_g.toFeature(network, FeatType.bigram.name()+"-po+1+2",  currTag+"", rPOS+" "+rrPOS));
 
         
         List<Integer> fs1 = new ArrayList<>();
@@ -127,9 +127,10 @@ public class LatentFeatureManager extends FeatureManager {
         FeatureArray fa2  = this.createFeatureArray(network, fs2);
         FeatureArray fa3  = this.createFeatureArray(network, fs3);
         FeatureArray fa4  = this.createFeatureArray(network, fs4);
+        FeatureArray fa5  = this.createFeatureArray(network, fs);
 
         fa1.addNext(fa2).addNext(fa3);
-        fa1.addNext(fa4);
+        fa1.addNext(fa4).addNext(fa5);
         
         return fa1;
     }

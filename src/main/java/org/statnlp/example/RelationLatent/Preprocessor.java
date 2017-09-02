@@ -35,6 +35,7 @@ public class Preprocessor {
                     tagString=tagString+word_tag[i].split("_")[1]+" ";
                     wordString=wordString+word_tag[i].split("_")[0]+" ";
                 }
+                tagString=groupTags(tagString);
                 tagString=tagString+"\n";
                 wString=wString+wordString+"\n"+tagString;
             }
@@ -234,5 +235,52 @@ public class Preprocessor {
             }
         }
         return lines;
+    }
+
+    private String groupTags(String tagString){
+        String newTagString="";
+        for(int i=0; i<tagString.split(" ").length; i++){
+            String s=tagString.split(" ")[i];
+            if(s.equals("CD")){ s="ADJ";}
+            else if(s.equals("JJ")){ s="ADJ";}
+            else if(s.equals("JJR")){ s="ADJ";}
+            else if(s.equals("JJS")){ s="ADJ";}
+            else if(s.equals("VB")){ s="V";}
+            else if(s.equals("VBD")){ s="V";}
+            else if(s.equals("VBG")){ s="V";}
+            else if(s.equals("VBG")){ s="V";}
+            else if(s.equals("VBN")){ s="V";}
+            else if(s.equals("VBP")){ s="V";}
+            else if(s.equals("VBZ")){ s="V";}
+            else if(s.equals("VB")){ s="V";}
+            else if(s.equals("MD")){ s="V";}
+            else if(s.equals("NN")){ s="N";}
+            else if(s.equals("NNP")){ s="N";}
+            else if(s.equals("NNS")){ s="N";}
+            else if(s.equals("NNPS")){ s="N";}
+            else if(s.equals("RB")){ s="ADV";}
+            else if(s.equals("RBR")){ s="ADV";}
+            else if(s.equals("RBS")){ s="ADV";}
+            else if(s.equals("RP")){ s="ADV";}
+            else if(s.equals("WRB")){ s="ADV";}
+            else if(s.equals("DT")){ s="DET";}
+            else if(s.equals("PDT")){ s="DET";}
+            else if(s.equals("WDT")){ s="DET";}
+            else if(s.equals("POS")){ s="DET";}
+            else if(s.equals("PRP")){ s="PRP";}
+            else if(s.equals("WP")){ s="PRP";}
+            else if(s.equals("WP$")){ s="PRP$";}
+            else if(s.equals("TO")){ s="PREP";}
+            else if(s.equals("IN")){ s="PREP";}
+            else if(s.equals("CC")){ s="CONJ";}
+            else if(s.equals("EX")){ s="OTHER";}
+            else if(s.equals("FW")){ s="OTHER";}
+            else if(s.equals("SYM")){ s="OTHER";}
+            else if(s.equals("UH")){ s="OTHER";}
+            else if(s.equals("LS")){ s="OTHER";}
+            newTagString=newTagString+s+" ";
+        }
+        newTagString=newTagString;
+        return newTagString;
     }
 }

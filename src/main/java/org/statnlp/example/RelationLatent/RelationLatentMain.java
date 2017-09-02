@@ -6,6 +6,7 @@ import java.io.Serializable;
 
 import org.statnlp.commons.io.RAWF;
 import org.statnlp.commons.types.Instance;
+import org.statnlp.commons.types.Word;
 import org.statnlp.commons.types.WordToken;
 import org.statnlp.example.RelationDescriptor.RelationFeatureManager;
 import org.statnlp.example.RelationDescriptor.RelationNetworkCompiler;
@@ -44,15 +45,17 @@ public class RelationLatentMain{
         modelFile="data/sem-eval/"+args[6];
 
 
-        NetworkConfig.PARALLEL_FEATURE_EXTRACTION = true;
-        NetworkConfig.AVOID_DUPLICATE_FEATURES = true;
+
         //Importing test and train data
-        RelationInstance[] trainInsts=readData(trainPath, true, trainCount);
-        RelationInstance[] testInsts=readData(testPath, false, testCount);
+        boolean reduceSpace=true;
+        boolean tagCategorize=true;
+        RelationInstance[] trainInsts=readData(trainPath, true, trainCount, tagCategorize, reduceSpace);
+        RelationInstance[] testInsts=readData(testPath, false, testCount, tagCategorize, reduceSpace);
 
         //build, train, test repeat...
         NetworkModel model=null;
-
+        NetworkConfig.PARALLEL_FEATURE_EXTRACTION = true;
+        NetworkConfig.AVOID_DUPLICATE_FEATURES = true;
         if(!readModel) {
             GlobalNetworkParam gnp = new GlobalNetworkParam();
             LatentFeatureManager fman = new LatentFeatureManager(gnp);
@@ -70,20 +73,17 @@ public class RelationLatentMain{
                 System.out.println(e);
             }
         }
+        Instance[] results=model.decode(testInsts);
+        LatentEvaluator eval=new LatentEvaluator(results);
         if(saveModel){
             ObjectOutputStream oos=RAWF.objectWriter(modelFile);
             oos.writeObject(model);
             oos.close();
         }
-        Instance[] results=model.decode(testInsts);
-        LatentEvaluator eval=new LatentEvaluator(results);
-        double metrics[]=eval.metrics;
-        System.out.println("Precision:"+metrics[0]+" Recall:"+metrics[1]+" F1-score:"+metrics[2]+" Accuracy:"+metrics[3]);
-
     }
 
 
-    public static RelationInstance[] readData(String processedFilePath, boolean isTraining, int lim) throws IOException{
+    public static RelationInstance[] readData(String processedFilePath, boolean isTraining, int lim, boolean tagCategorize, boolean reduceSpace) throws IOException{
         BufferedReader br= RAWF.reader(processedFilePath);
         String line=null;
         List<RelationInstance> insts=new ArrayList<RelationInstance>();
@@ -119,6 +119,9 @@ public class RelationLatentMain{
                     Input input=new Input(e1Start, e1End, e2Start, e2End,  wts);
                     wts=new ArrayList<WordToken>();
                     RelationInstance inst=new RelationInstance(count, 1.0,input, output);
+                    if(reduceSpace){
+                        inst=reduceSpace(inst);
+                    }
                     if(isTraining){
                         inst.setLabeled();
                     }
@@ -130,6 +133,9 @@ public class RelationLatentMain{
                 else if(lnum%5==2){
                     String[] tag_split=line.split(" ");
                     for(int i=0; i<tag_split.length; i++){
+                        if(tagCategorize){
+                            tag_split[i]=groupTags(tag_split[i]);
+                        }
                         wts.get(i).setTag(tag_split[i]);
                     }
                 }
@@ -139,4 +145,73 @@ public class RelationLatentMain{
         return insts.toArray(new RelationInstance[insts.size()]);
     }
 
+    private static String groupTags(String tagString){
+        String s=tagString;
+        if(s.equals("CD")){ s="ADJ";}
+        else if(s.equals("JJ")){ s="ADJ";}
+        else if(s.equals("JJR")){ s="ADJ";}
+        else if(s.equals("JJS")){ s="ADJ";}
+        else if(s.equals("VB")){ s="V";}
+        else if(s.equals("VBD")){ s="V";}
+        else if(s.equals("VBG")){ s="V";}
+        else if(s.equals("VBG")){ s="V";}
+        else if(s.equals("VBN")){ s="V";}
+        else if(s.equals("VBP")){ s="V";}
+        else if(s.equals("VBZ")){ s="V";}
+        else if(s.equals("VB")){ s="V";}
+        else if(s.equals("MD")){ s="V";}
+        else if(s.equals("NN")){ s="N";}
+        else if(s.equals("NNP")){ s="N";}
+        else if(s.equals("NNS")){ s="N";}
+        else if(s.equals("NNPS")){ s="N";}
+        else if(s.equals("RB")){ s="ADV";}
+        else if(s.equals("RBR")){ s="ADV";}
+        else if(s.equals("RBS")){ s="ADV";}
+        else if(s.equals("RP")){ s="ADV";}
+        else if(s.equals("WRB")){ s="ADV";}
+        else if(s.equals("DT")){ s="DET";}
+        else if(s.equals("PDT")){ s="DET";}
+        else if(s.equals("WDT")){ s="DET";}
+        else if(s.equals("POS")){ s="DET";}
+        else if(s.equals("PRP")){ s="PRP";}
+        else if(s.equals("WP")){ s="PRP";}
+        else if(s.equals("WP$")){ s="PRP$";}
+        else if(s.equals("TO")){ s="PREP";}
+        else if(s.equals("IN")){ s="PREP";}
+        else if(s.equals("CC")){ s="CONJ";}
+        else if(s.equals("EX")){ s="OTHER";}
+        else if(s.equals("FW")){ s="OTHER";}
+        else if(s.equals("SYM")){ s="OTHER";}
+        else if(s.equals("UH")){ s="OTHER";}
+        else if(s.equals("LS")){ s="OTHER";}
+        return s;
+    }
+    public static void printInst(RelationInstance[] insts){
+        for(int i=0; i<insts.length; i++){
+            for(int j=0; j<insts[i].input.wts.size(); j++) {
+                System.out.print(insts[i].input.wts.get(j).getForm()+" ");
+            }
+            System.out.println();
+            for(int j=0; j<insts[i].input.wts.size(); j++) {
+                System.out.print(insts[i].input.wts.get(j).getTag()+" ");
+            }
+            System.out.println();
+            System.out.println(insts[i].input.e1Start+"*"+insts[i].input.e1End+"/"+insts[i].input.e2Start+"*"+insts[i].input.e2End);
+            System.out.println(insts[i].output.relType);
+            System.out.println();
+        }
+    }
+    public static RelationInstance reduceSpace(RelationInstance inst){
+        List<WordToken> wts=new ArrayList<WordToken>();
+        for(int i=inst.input.e1Start; i<=inst.input.e2End; i++){
+            WordToken wt=new WordToken(inst.input.wts.get(i).getForm(), inst.input.wts.get(i).getTag());
+            wts.add(wt);
+        }
+        inst.input.wts=wts;
+        inst.input.e1End-=inst.input.e1Start;
+        inst.input.e2Start-=inst.input.e1Start;
+        inst.input.e2End-=inst.input.e1Start;
+        inst.input.e1Start-=inst.input.e1Start;
+        return inst;
+    }
 }
