@@ -24,6 +24,7 @@ public class RelationLatentMain{
     private static int testCount;
     private static String trainPath="data/sem-eval/trainFileProcessed.txt";
     private static String testPath="data/sem-eval/testFileProcessed.txt";
+    private static String outputFname="data/sem-eval/output.txt";
     private static List<String> relTypes=new ArrayList<String>();
     private static int iterCount=1000;
     private static int threadCount;
@@ -48,10 +49,11 @@ public class RelationLatentMain{
 
         //Importing test and train data
         boolean reduceSpace=false;
-        boolean tagCategorize=false;
+        boolean tagCategorize=true;
         RelationInstance[] trainInsts=readData(trainPath, true, trainCount, tagCategorize, reduceSpace);
         RelationInstance[] testInsts=readData(testPath, false, testCount, tagCategorize, reduceSpace);
-        printInst(testInsts);
+
+        //printInst(testInsts);
         //build, train, test repeat...
         NetworkModel model=null;
         NetworkConfig.PARALLEL_FEATURE_EXTRACTION = true;
@@ -75,11 +77,16 @@ public class RelationLatentMain{
         }
         Instance[] results=model.decode(testInsts);
         LatentEvaluator eval=new LatentEvaluator(results);
+        writeResults(outputFname, results);
+        writeDetailedResults(outputFname+"_detailed", results);
+
         if(saveModel){
             ObjectOutputStream oos=RAWF.objectWriter(modelFile);
             oos.writeObject(model);
             oos.close();
         }
+        //goldExtractToFile(2717, testInsts);
+
     }
 
 
@@ -213,5 +220,92 @@ public class RelationLatentMain{
         inst.input.e2End-=inst.input.e1Start;
         inst.input.e1Start-=inst.input.e1Start;
         return inst;
+    }
+    private static void writeResults(String fname, Instance[] results) throws IOException{
+        FileWriter fw=new FileWriter(fname);
+        BufferedWriter bw=new BufferedWriter(fw);
+        String wString="";
+        int index=8000;
+        for(Instance result: results){
+            RelationInstance res=(RelationInstance) result;
+            List<String> pred=(List<String>)res.getPrediction();
+            String predTag="O";
+            String predTagFull="";
+            for(int i=0; i<pred.size(); i++){
+                if(!pred.get(i).equals("O")){
+                    predTag=pred.get(i).split("-")[1];
+                    predTagFull=relTypeDecode(predTag);
+                    break;
+                }
+            }
+            index++;
+            wString=wString+index+"\t"+predTagFull+"\n";
+
+        }
+        bw.write(wString);
+        bw.close();
+    }
+    private static void writeDetailedResults(String fname, Instance[] results) throws IOException{
+        FileWriter fw=new FileWriter(fname);
+        BufferedWriter bw=new BufferedWriter(fw);
+        String wString="";
+        int index=8000;
+        for(Instance result: results){
+            RelationInstance res=(RelationInstance) result;
+            List<String> pred=(List<String>)res.getPrediction();
+            String predTag="O";
+            String predTagFull="";
+            for(int i=0; i<pred.size(); i++){
+                if(!pred.get(i).equals("O")){
+                    predTag=pred.get(i).split("-")[1];
+                    predTagFull=relTypeDecode(predTag);
+                    break;
+                }
+            }
+            String words="";
+            for(int i=0; i<result.size()-1; i++){
+                words=words+res.input.wts.get(i).getForm()+" ";
+            }
+            words=words+res.input.wts.get(result.size()-1).getForm();
+            index++;
+            wString=wString+index+"\n"+words+"\n"+predTagFull+"\n";
+        }
+        bw.write(wString);
+        bw.close();
+    }
+    private static String relTypeDecode(String predTag){
+        if(predTag.equals("ce_norm")){return "Cause-Effect(e1,e2)";}
+        else if(predTag.equals("ce_rev")){return "Cause-Effect(e2,e1)";}
+        else if(predTag.equals("ia_norm")){return "Instrument-Agency(e1,e2)";}
+        else if(predTag.equals("ia_rev")){return "Instrument-Agency(e2,e1)";}
+        else if(predTag.equals("pp_norm")){return "Product-Producer(e1,e2)";}
+        else if(predTag.equals("pp_rev")){return "Product-Producer(e2,e1)";}
+        else if(predTag.equals("cc_norm")){return "Content-Container(e1,e2)";}
+        else if(predTag.equals("cc_rev")){return "Content-Container(e2,e1)";}
+        else if(predTag.equals("eo_norm")){return "Entity-Origin(e1,e2)";}
+        else if(predTag.equals("eo_rev")){return "Entity-Origin(e2,e1)";}
+        else if(predTag.equals("ed_norm")){return "Entity-Destination(e1,e2)";}
+        else if(predTag.equals("ed_rev")){return "Entity-Destination(e2,e1)";}
+        else if(predTag.equals("cw_norm")){return "Component-Whole(e1,e2)";}
+        else if(predTag.equals("cw_rev")){return "Component-Whole(e2,e1)";}
+        else if(predTag.equals("mc_norm")){return "Member-Collection(e1,e2)";}
+        else if(predTag.equals("mc_rev")){return "Member-Collection(e2,e1)";}
+        else if(predTag.equals("ct_norm")){return "Communication-Topic(e1,e2)";}
+        else if(predTag.equals("ct_rev")){return "Communication-Topic(e2,e1)";}
+        else{return "Other";}
+    }
+    public static void goldExtractToFile(int count, RelationInstance[] testInsts) throws IOException{
+        FileWriter fw=new FileWriter("data/sem-eval/gold"+count+".txt");
+
+        BufferedWriter bw=new BufferedWriter(fw);
+        String wString="";
+        int index=8001;
+        for(int i=0; i<count; i++){
+            wString=wString+index+"\t"+relTypeDecode(testInsts[i].output.relType)+"\n";
+            index++;
+        }
+        System.out.println(wString);
+        bw.write(wString);
+        bw.close();
     }
 }

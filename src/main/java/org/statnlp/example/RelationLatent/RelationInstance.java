@@ -26,5 +26,11 @@ public class RelationInstance extends BaseInstance<RelationInstance, Input, Outp
     public Output duplicateOutput(){
         return this.output;
     }
-
+    public String toString(){
+        for(int i=0; i<this.size(); i++){
+            System.out.print(this.getInstanceId()+""+this.input.wts.get(i).getForm()+" ");
+        }
+        System.out.println();
+        return "";
+    }
 }
