@@ -1,5 +1,6 @@
 package org.statnlp.example.RelationLatent;
 
+import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,13 +9,17 @@ import org.statnlp.hypergraph.FeatureArray;
 import org.statnlp.hypergraph.FeatureManager;
 import org.statnlp.hypergraph.GlobalNetworkParam;
 import org.statnlp.hypergraph.Network;
+import org.statnlp.hypergraph.NetworkConfig;
 
 public class LatentFeatureManager extends FeatureManager {
 	
 	private static final long serialVersionUID = -9053492051283606458L;
 	
-	public LatentFeatureManager(GlobalNetworkParam param_g) {
+	private boolean zero_digit = false;
+	
+	public LatentFeatureManager(GlobalNetworkParam param_g, boolean zero_digit) {
         super(param_g);
+        this.zero_digit = zero_digit;
     }
 
     private enum FeatType{
@@ -23,7 +28,7 @@ public class LatentFeatureManager extends FeatureManager {
     @Override
     protected FeatureArray extract_helper(Network network, int parent_k, int[] children_k, int children_k_index) {
         RelationInstance inst=(RelationInstance)network.getInstance();
-        List<Integer> fs=new ArrayList<Integer>();
+        List<Integer> fs = new ArrayList<>();
         int[] paArr=network.getNodeArray(parent_k);
         if(LatentNetworkCompiler.NodeType.values()[paArr[2]]== LatentNetworkCompiler.NodeType.leaf || LatentNetworkCompiler.NodeType.values()[paArr[2]]== LatentNetworkCompiler.NodeType.root){
             return FeatureArray.EMPTY;
@@ -34,6 +39,7 @@ public class LatentFeatureManager extends FeatureManager {
         int prevTag=childArr[1];
         List<WordToken> wts=inst.input.wts;
         String word=wts.get(pos).getForm();
+
         String lword=(pos-1)>=0?wts.get(pos-1).getForm():"START-W"+(pos-1);
         String llword=(pos-2)>=0?wts.get(pos-2).getForm():"START-W"+(pos-2);
         String rword=(pos+1)<inst.size()?wts.get(pos+1).getForm():"END-W"+(pos+1);
@@ -71,15 +77,14 @@ public class LatentFeatureManager extends FeatureManager {
         fs.add(_param_g.toFeature(network, FeatType.bigram.name()+"-po0+1",  currTag+"", POS+" "+rPOS));
         fs.add(_param_g.toFeature(network, FeatType.bigram.name()+"-po+1+2",  currTag+"", rPOS+" "+rrPOS));
 
-        
+
         List<Integer> fs1 = new ArrayList<>();
         List<Integer> fs2 = new ArrayList<>();
         List<Integer> fs3 = new ArrayList<>();
         List<Integer> fs4 = new ArrayList<>();
 
 
-        //FIRST-ORDER FEATURES
-        //UNIGRAM FEATURES
+
         fs1.add(_param_g.toFeature(network, FeatType.unigram.name()+"*w0",  prevTag+" "+currTag, word));
         fs1.add(_param_g.toFeature(network, FeatType.unigram.name()+"*w-1",  prevTag+" "+currTag, lword));
         fs1.add(_param_g.toFeature(network, FeatType.unigram.name()+"*w-2",  prevTag+" "+currTag, llword));
@@ -101,7 +106,14 @@ public class LatentFeatureManager extends FeatureManager {
         fs2.add(_param_g.toFeature(network, FeatType.bigram.name()+"*po0+1",  prevTag+" "+currTag, POS+" "+rPOS));
         fs2.add(_param_g.toFeature(network, FeatType.bigram.name()+"*po+1+2",  prevTag+" "+currTag, rPOS+" "+rrPOS));
 
-        //TRANSITION FEATURES
+        if (NetworkConfig.USE_NEURAL_FEATURES) {
+        	String sent = getSentence(wts);
+        	SimpleImmutableEntry<String, Integer> sentAndPos = new SimpleImmutableEntry<String, Integer>(sent, pos);
+        	this.addNeural(network, 0, parent_k, children_k_index, sentAndPos, currTag);
+        } else {
+        	fs1.add(_param_g.toFeature(network, FeatType.unigram.name()+"*w0",  prevTag+" "+currTag, word));
+        }
+       
         fs3.add(_param_g.toFeature(network, FeatType.transition.name(), currTag+"", prevTag+""));
 
         //ENTITY FEATURES=>Implemented using bag of words approach
@@ -133,5 +145,17 @@ public class LatentFeatureManager extends FeatureManager {
         fa1.addNext(fa4).addNext(fa5);
         
         return fa1;
+    }
+    
+    private String getSentence(List<WordToken> wts) {
+    	StringBuilder sb = new StringBuilder();
+    	for (int i = 0; i < wts.size(); i++) {
+    		String curr = i == 0 ? wts.get(i).getForm()  : " " + wts.get(i).getForm();
+    		if (this.zero_digit) {
+    			curr = curr.replaceAll("\\d", "0");
+    		}
+    		sb.append(curr);
+    	}
+    	return sb.toString();
     }
 }

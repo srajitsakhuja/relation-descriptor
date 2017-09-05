@@ -1,19 +1,23 @@
 package org.statnlp.example.RelationLatent;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.io.Serializable;
 
 import org.statnlp.commons.io.RAWF;
+import org.statnlp.commons.ml.opt.OptimizerFactory;
 import org.statnlp.commons.types.Instance;
-import org.statnlp.commons.types.Word;
 import org.statnlp.commons.types.WordToken;
-import org.statnlp.example.RelationDescriptor.RelationFeatureManager;
-import org.statnlp.example.RelationDescriptor.RelationNetworkCompiler;
 import org.statnlp.hypergraph.DiscriminativeNetworkModel;
 import org.statnlp.hypergraph.GlobalNetworkParam;
 import org.statnlp.hypergraph.NetworkConfig;
 import org.statnlp.hypergraph.NetworkModel;
+import org.statnlp.hypergraph.neural.GlobalNeuralNetworkParam;
+import org.statnlp.hypergraph.neural.NeuralNetworkCore;
 
 public class RelationLatentMain{
     private static final long serialVersionUID = 2046107789709874963L;
@@ -32,9 +36,30 @@ public class RelationLatentMain{
     private static boolean readModel;
     private static boolean saveModel;
     private static String modelFile;
+    private static boolean zero_digit = true;
+    private static boolean fixEmbedding = true;
+
     public static void main(String...args) throws IOException, InterruptedException{
-        //Preprocessing to add POSTags and parsing the data to usable form
-        //Preprocessor processor=new Preprocessor(unprocessedFilePath, processedFilePath);
+    	
+    	trainCount = 2000;
+    	testCount = -1;
+        int threadNum = 5;
+        double l2 = 0.05;
+        zero_digit = true;
+        fixEmbedding = true;
+        String embedding = "google";
+        int embeddingDimension = 300;
+        int gpuId = -1;
+        iterCount = 4000;
+        String os = "osx";
+        
+        
+        NetworkConfig.NUM_THREADS = threadNum;
+        NetworkConfig.L2_REGULARIZATION_CONSTANT= l2;
+        NetworkConfig.PARALLEL_FEATURE_EXTRACTION = true;
+        NetworkConfig.AVOID_DUPLICATE_FEATURES = true;
+        NetworkConfig.USE_NEURAL_FEATURES = true;
+        NetworkConfig.OS = os;
 
         //Param initialisation
         trainCount=Integer.parseInt(args[0]);
@@ -59,8 +84,14 @@ public class RelationLatentMain{
         NetworkConfig.PARALLEL_FEATURE_EXTRACTION = true;
         NetworkConfig.AVOID_DUPLICATE_FEATURES = true;
         if(!readModel) {
-            GlobalNetworkParam gnp = new GlobalNetworkParam();
-            LatentFeatureManager fman = new LatentFeatureManager(gnp);
+        	List<NeuralNetworkCore> nets = new ArrayList<>();
+            if (NetworkConfig.USE_NEURAL_FEATURES) {
+            	int numLabels = 2 * relTypes.size() + 1;
+            	nets.add(new RelationLSTM(embeddingDimension, numLabels, gpuId, embedding, fixEmbedding));
+            }
+            GlobalNeuralNetworkParam gnnp = new GlobalNeuralNetworkParam(nets);
+            GlobalNetworkParam gnp= new GlobalNetworkParam(OptimizerFactory.getLBFGSFactory() ,gnnp);
+            LatentFeatureManager fman = new LatentFeatureManager(gnp, zero_digit);
             LatentNetworkCompiler networkCompiler = new LatentNetworkCompiler(relTypes);
             model = DiscriminativeNetworkModel.create(fman, networkCompiler);
             model.train(trainInsts, iterCount);
@@ -118,12 +149,12 @@ public class RelationLatentMain{
                 }
                 else if(lnum%5==4){
                     count++;
-                    if(count>lim){break;}
+                    if(lim != -1 && count>lim){break;}
                     Output output=new Output(line, wts.size());
                     if(!relTypes.contains(output.relType) && isTraining){
                         relTypes.add(output.relType);
                     }
-                    Input input=new Input(e1Start, e1End, e2Start, e2End,  wts);
+                    Input input= new Input(e1Start, e1End, e2Start, e2End,  wts);
                     wts=new ArrayList<WordToken>();
                     RelationInstance inst=new RelationInstance(count, 1.0,input, output);
                     if(reduceSpace){
@@ -136,6 +167,9 @@ public class RelationLatentMain{
                         inst.setUnlabeled();
                     }
                     insts.add(inst);
+                    if (insts.size() == lim) {
+                    	break;
+                    }
                 }
                 else if(lnum%5==2){
                     String[] tag_split=line.split(" ");
@@ -149,6 +183,7 @@ public class RelationLatentMain{
                 lnum+=1;
             }
         }
+        br.close();
         return insts.toArray(new RelationInstance[insts.size()]);
     }
 

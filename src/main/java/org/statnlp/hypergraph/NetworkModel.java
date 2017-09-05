@@ -357,13 +357,11 @@ public abstract class NetworkModel implements Serializable{
 					if(NetworkConfig.RANDOM_BATCH && batchId == 0) {
 						Collections.shuffle(instIds, RANDOM);
 					}
-					for(int iid = 1; iid <= size; iid++){
-						int idx = iid + offset;
-						batchInstIds.add(idx);
-						if (idx == instIds.size()) break;
+					for(int iid = 0; iid < size; iid++){
+						batchInstIds.add(instIds.get((iid+offset) % instIds.size()));
 					}
-					offset = NetworkConfig.BATCH_SIZE*(batchId + 1);
 					batchId++;
+					offset = NetworkConfig.BATCH_SIZE * batchId;
 				}
 				for(LocalNetworkLearnerThread learner: this._learners){
 					learner.setIterationNumber(it);
