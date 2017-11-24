@@ -28,6 +28,9 @@ public class TwitterLogisticFeatureManager extends FeatureManager {
         int currTag=paArr[1];
         String entityString=inst.getInput().entity;
         String[] entityList=entityString.split(" ");
+
+
+
         List<Integer> eStart=inst.getInput().eStart;
         List<Integer> eEnd=inst.getInput().eEnd;
         int windowSize=2;
@@ -52,10 +55,10 @@ public class TwitterLogisticFeatureManager extends FeatureManager {
             String rword = eEnd.get(j) < inst.size() - 1 ? inst.getInput().wts.get(eEnd.get(j) + 1).getForm() : "RIGHTLIM-W";
             String lPOS = eStart.get(j) > 0 ? inst.getInput().wts.get(eStart.get(j) - 1).getTag() : "LEFTLIM-P";
             String rPOS = eEnd.get(j) < inst.size() - 1 ? inst.getInput().wts.get(eEnd.get(j) + 1).getTag() : "RIGHTLIM-W";
-            fs.add(_param_g.toFeature(network, featureType.window.name() + "-1", currTag + "", lword));
-            fs.add(_param_g.toFeature(network, featureType.window.name() + "+1", currTag + "", rword));
-            fs.add(_param_g.toFeature(network, featureType.window.name() + "-1", currTag + "", lPOS));
-            fs.add(_param_g.toFeature(network, featureType.window.name() + "+1", currTag + "", rPOS));
+            fs.add(_param_g.toFeature(network, featureType.window.name() + "WordIdentity-1", currTag + "", lword));
+            fs.add(_param_g.toFeature(network, featureType.window.name() + "WordIdentity+1", currTag + "", rword));
+            fs.add(_param_g.toFeature(network, featureType.window.name() + "POS-1", currTag + "", lPOS));
+            fs.add(_param_g.toFeature(network, featureType.window.name() + "POS+1", currTag + "", rPOS));
         }
 //
         for(int i=0; i<inst.size(); i++){

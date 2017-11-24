@@ -31,12 +31,12 @@ public class TwitterLogisticMain {
 
         Set<String> userEntity=new HashSet<String>();
         for(int i=0; i<testInsts.length; i++){
-            userEntity.add(testInsts[i].input.user.split("\\$")[0]+testInsts[i].input.entity);
+            userEntity.add(testInsts[i].input.user.split("\\$")[0]+"$"+testInsts[i].input.entity);
             if(testInsts[i].output==1){
-                groundTruth.put(testInsts[i].input.user.split("\\$")[0]+testInsts[i].input.entity,1);
+                groundTruth.put(testInsts[i].input.user.split("\\$")[0]+"$"+testInsts[i].input.entity,1);
             }
             else{
-                groundTruth.put(testInsts[i].input.user.split("\\$")[0]+testInsts[i].input.entity,-1);
+                groundTruth.put(testInsts[i].input.user.split("\\$")[0]+"$"+testInsts[i].input.entity,-1);
             }
         }
         if(global){
@@ -55,6 +55,7 @@ public class TwitterLogisticMain {
         model = DiscriminativeNetworkModel.create(fman, networkCompiler);
         model.train(trainInsts, iterCount);
         Instance[] results=model.decode(testInsts);
+
         TwitterLogisticEvaluator eval=new TwitterLogisticEvaluator(results, userEntity, groundTruth, global);
         System.out.println(eval.precision);
         System.out.println(eval.recall);
@@ -64,7 +65,8 @@ public class TwitterLogisticMain {
         int i;
         Map<String, List<TwitterInstance> > map=new HashMap<String, List<TwitterInstance> > ();
         for(i=0; i<insts.length; i++){
-            String key=insts[i].input.user+"$"+insts[i].input.entity;
+            String key=insts[i].input.user.split("\\$")[0]+"$"+insts[i].input.entity;;
+            System.out.println(key);System.out.println("\n");
             if(map.containsKey(key)){
                 map.get(key).add(insts[i]);
             }
@@ -81,32 +83,30 @@ public class TwitterLogisticMain {
         int instanceId=0;
         for(String key: globalMap.keySet()){
             int size=globalMap.get(key).size();
-//            if(size==3){
-                List<WordToken> wts=new ArrayList<WordToken>();
-                List<Integer> eStart=new ArrayList<Integer>();
-                List<Integer> eEnd=new ArrayList<Integer>();
-                int offset=0;
-                String entityString=globalMap.get(key).get(0).input.entity;
-                String userString=globalMap.get(key).get(0).input.user;
-                int output=globalMap.get(key).get(0).output;
-                for(int i=0; i<globalMap.get(key).size(); i++){
-                   TwitterInstance inst=globalMap.get(key).get(i);
-                   eStart.add(inst.input.eStart.get(0)+offset);
-                    eEnd.add(inst.input.eEnd.get(0)+offset);
-                    for(WordToken wt:inst.input.wts){
-                        wts.add(wt);
-                    }
-                    offset+=inst.input.wts.size();
+            List<WordToken> wts=new ArrayList<WordToken>();
+            List<Integer> eStart=new ArrayList<Integer>();
+            List<Integer> eEnd=new ArrayList<Integer>();
+            int offset=0;
+            String entityString=globalMap.get(key).get(0).input.entity;
+            String userString=globalMap.get(key).get(0).input.user;
+            int output=globalMap.get(key).get(0).output;
+            for(int i=0; i<globalMap.get(key).size(); i++){
+               TwitterInstance inst=globalMap.get(key).get(i);
+               for(int j=0; j<inst.input.eStart.size(); j++) {
+                   eStart.add(inst.input.eStart.get(j) + offset);
+                   eEnd.add(inst.input.eEnd.get(j) + offset);
                }
-               TwitterInput input=new TwitterInput(userString, wts,entityString, eStart,eEnd);
-                instanceId++;
-                TwitterInstance newInst=new TwitterInstance(instanceId, 1.0,input, output);
-                if(isTraining){newInst.setLabeled();}
-                else{newInst.setUnlabeled();}
-                insts.add(newInst);
-                //newInst.toString();
-//                break;
-//            }
+                for(WordToken wt:inst.input.wts){
+                    wts.add(wt);
+                }
+                offset+=inst.input.wts.size();
+           }
+           TwitterInput input=new TwitterInput(userString, wts,entityString, eStart,eEnd);
+            instanceId++;
+            TwitterInstance newInst=new TwitterInstance(instanceId, 1.0,input, output);
+            if(isTraining){newInst.setLabeled();}
+            else{newInst.setUnlabeled();}
+            insts.add(newInst);
         }
         return insts.toArray(new TwitterInstance[insts.size()]);
     }
