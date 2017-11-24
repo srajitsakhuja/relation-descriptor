@@ -30,15 +30,13 @@ public class TwitterLogisticNetworkCompiler extends NetworkCompiler {
     }
     @Override
     public Network compileLabeled(int networkId, Instance inst, LocalNetworkParam param) {
-        System.out.println("hi");
-
         BaseNetwork.NetworkBuilder<BaseNetwork> builder=BaseNetwork.NetworkBuilder.builder();
         TwitterInstance myInst=(TwitterInstance)inst;
         long leaf=toLeaf();
         long root=toRoot();
         builder.addNode(leaf);
         builder.addNode(root);
-        int output=myInst.out>0?myInst.out:0;
+        int output=myInst.getOutput()>0?myInst.getOutput():0;
         long tagNode=toTagNode(output);
         builder.addNode(tagNode);
         builder.addEdge(tagNode, new long[]{leaf});
@@ -48,7 +46,6 @@ public class TwitterLogisticNetworkCompiler extends NetworkCompiler {
 
     @Override
     public Network compileUnlabeled(int networkId, Instance inst, LocalNetworkParam param) {
-        System.out.println("hello");
         BaseNetwork.NetworkBuilder<BaseNetwork> builder=BaseNetwork.NetworkBuilder.builder();
         TwitterInstance myInst=(TwitterInstance)inst;
         long leaf=toLeaf();

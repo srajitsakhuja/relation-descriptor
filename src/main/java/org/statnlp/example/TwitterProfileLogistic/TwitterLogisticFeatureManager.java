@@ -24,12 +24,12 @@ public class TwitterLogisticFeatureManager extends FeatureManager {
         int NodeType=paArr[2];
         if (NodeType != TwitterLogisticNetworkCompiler.nodeType.tag.ordinal())
             return FeatureArray.EMPTY;
-        if(inst.getInput()==null){System.out.println(inst.getInstanceId());System.out.printf("%d:%d:%s\n", paArr[0], paArr[1], TwitterLogisticNetworkCompiler.nodeType.values()[paArr[2]]);}
+//        if(inst.getInput()==null){System.out.println(inst.getInstanceId());System.out.printf("%d:%d:%s\n", paArr[0], paArr[1], TwitterLogisticNetworkCompiler.nodeType.values()[paArr[2]]);}
         int currTag=paArr[1];
         String entityString=inst.getInput().entity;
         String[] entityList=entityString.split(" ");
-        List<Integer> eStart=inst.in.eStart;
-        List<Integer> eEnd=inst.in.eEnd;
+        List<Integer> eStart=inst.getInput().eStart;
+        List<Integer> eEnd=inst.getInput().eEnd;
         int windowSize=2;
 
         String entityUpperCase="0";
@@ -42,18 +42,24 @@ public class TwitterLogisticFeatureManager extends FeatureManager {
         String entityLength=entityList.length+"";
         fs.add(_param_g.toFeature(network, featureType.entity.name()+"length",  currTag+"", entityLength));
         fs.add(_param_g.toFeature(network, featureType.entity.name()+"upperCase",  currTag+"", entityUpperCase));
-
-        for(int i=0; i<entityList.length; i++){
-            fs.add(_param_g.toFeature(network, featureType.token.name()+"WordIdentity", currTag+"", entityList[i] ));
+        for(int j=0; j<eStart.size(); j++) {
+            for (int i = eStart.get(j); i <= eEnd.get(j); i++) {
+                fs.add(_param_g.toFeature(network, featureType.token.name() + "WordIdentity", currTag + "", inst.getInput().wts.get(i).getForm()));
+                fs.add(_param_g.toFeature(network, featureType.token.name() + "POS", currTag + "", inst.getInput().wts.get(i).getTag()));
+                fs.add(_param_g.toFeature(network, featureType.token.name() + "NER", currTag + "", inst.getInput().wts.get(i).getPhraseTag()));
+            }
+            String lword = eStart.get(j) > 0 ? inst.getInput().wts.get(eStart.get(j) - 1).getForm() : "LEFTLIM-W";
+            String rword = eEnd.get(j) < inst.size() - 1 ? inst.getInput().wts.get(eEnd.get(j) + 1).getForm() : "RIGHTLIM-W";
+            String lPOS = eStart.get(j) > 0 ? inst.getInput().wts.get(eStart.get(j) - 1).getTag() : "LEFTLIM-P";
+            String rPOS = eEnd.get(j) < inst.size() - 1 ? inst.getInput().wts.get(eEnd.get(j) + 1).getTag() : "RIGHTLIM-W";
+            fs.add(_param_g.toFeature(network, featureType.window.name() + "-1", currTag + "", lword));
+            fs.add(_param_g.toFeature(network, featureType.window.name() + "+1", currTag + "", rword));
+            fs.add(_param_g.toFeature(network, featureType.window.name() + "-1", currTag + "", lPOS));
+            fs.add(_param_g.toFeature(network, featureType.window.name() + "+1", currTag + "", rPOS));
         }
-
-        String lword=eStart.get(0)>0?inst.in.wts.get(eStart.get(0)-1).getForm():"LEFTLIM";
-        String rword=eEnd.get(0)<inst.size()-1?inst.in.wts.get(eEnd.get(0)+1).getForm():"RIGHTLIM";
-        fs.add(_param_g.toFeature(network, featureType.window.name()+"-1", currTag+"", lword));
-        fs.add(_param_g.toFeature(network, featureType.window.name()+"+1", currTag+"", rword));
-
+//
         for(int i=0; i<inst.size(); i++){
-            fs.add(_param_g.toFeature(network, featureType.tweet.name(), currTag+"", inst.in.wts.get(i).getForm()));
+            fs.add(_param_g.toFeature(network, featureType.tweet.name(), currTag+"", inst.getInput().wts.get(i).getForm()));
         }
         return this.createFeatureArray(network, fs);
     }
