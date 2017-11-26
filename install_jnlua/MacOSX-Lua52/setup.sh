@@ -10,6 +10,6 @@ cd jnlua-1.0.4/src/main/c/MacOSX && make
 cd $CURRENT_DIR
 cp jnlua-1.0.4/src/main/c/MacOSX/libjnlua5.2.jnilib $STATNLP_DIR/nativeLib/libjnlua52.jnilib
 cp $HOME/torch/install/lib/libTH.dylib $STATNLP_DIR/nativeLib
-luarocks install torch
-luarocks install nn
-luarocks install rnn
+#luarocks install torch
+#luarocks install nn
+#luarocks install rnn

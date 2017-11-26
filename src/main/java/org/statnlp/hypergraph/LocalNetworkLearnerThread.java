@@ -162,6 +162,7 @@ public class LocalNetworkLearnerThread extends Thread implements Callable<Void> 
 	
 	public void preCompileNetworks(){
 		for(int networkId = 0; networkId< this._instances.length; networkId++){
+
 			Network network = this.getNetwork(networkId);
 			network.initStructArr();
 		}
@@ -181,6 +182,7 @@ public class LocalNetworkLearnerThread extends Thread implements Callable<Void> 
 			if (this.trainInstsIds != null && !this.trainInstsIds.contains(this._instances[i].getInstanceId())
 					&& !this.trainInstsIds.contains(-this._instances[i].getInstanceId()))
 				continue;
+
 			Network network = this.getNetwork(i);
 			if (NetworkConfig.INFERENCE == InferenceType.MEAN_FIELD) {
 				// only the unlabeled network needs the marginal map.
@@ -216,6 +218,7 @@ public class LocalNetworkLearnerThread extends Thread implements Callable<Void> 
 		if(this._cacheNetworks && this._networks[networkId]!=null)
 			return this._networks[networkId];
 		Network network = this._builder.compileAndStore(networkId, this._instances[networkId], this._param);
+
 		if(this._cacheNetworks)
 			this._networks[networkId] = network;
 		if(network.countNodes() > this._networkCapacity) this._networkCapacity = network.countNodes();

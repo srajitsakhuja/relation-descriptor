@@ -280,13 +280,12 @@ public abstract class NetworkModel implements Serializable{
 		if (NetworkConfig.USE_NEURAL_FEATURES) {
 			this._fm.getParam_G().getNNParamG().setLearningState();
 		}
-		
 		printUsedMemory("before touch");
 		boolean keepExistingThreads = NetworkConfig.PRE_COMPILE_NETWORKS ? true : false;
 		// The first touch
 		touch(insts, keepExistingThreads);
 		printUsedMemory("after touch");
-		
+
 		for(int threadId=0; threadId<this._numThreads; threadId++){
 			if(NetworkConfig.BUILD_FEATURES_FROM_LABELED_ONLY){
 				// We extract features only from labeled instance in the first touch, so we don't know what
@@ -294,6 +293,7 @@ public abstract class NetworkModel implements Serializable{
 				// Since we extract only from labeled instances, the feature index will be smaller
 				this._fm.addIntoLocalFeatures(this._learners[threadId].getLocalNetworkParam()._globalFeature2LocalFeature);
 			}
+
 			this._learners[threadId].getLocalNetworkParam().finalizeIt();
 		}
 
@@ -482,8 +482,8 @@ public abstract class NetworkModel implements Serializable{
 		this._fm.getParam_G().setInstsNum(this._allInstances.length);
 		
 		//create the threads.
+
 		this._learners = new LocalNetworkLearnerThread[this._numThreads];
-		
 		return this.splitInstancesForTrain();
 	}
 
@@ -519,15 +519,19 @@ public abstract class NetworkModel implements Serializable{
 				} else {
 					this._learners[threadId] = this._learners[threadId].copyThread();
 				}
+				//System.out.println("HA");
+
 				this._learners[threadId].setTouch();
 				this._learners[threadId].start();
 			}
 			for(int threadId = 0; threadId < this._numThreads; threadId++){
+
 				this._learners[threadId].join();
+
 				this._learners[threadId].setUnTouch();
 			}
-			
 			if(NetworkConfig.PRE_COMPILE_NETWORKS || !keepExisting){
+
 				//this one is because in the first touch, we don't have the exisiting threads if not precompile network. 
 				//So we merge in first feature extraction.
 				//If precompile network, we keep exisiting threads. But we still need to merge features because
@@ -535,11 +539,14 @@ public abstract class NetworkModel implements Serializable{
 				this._fm._param_g.mergeStringIndex(_learners);
 				this._fm.mergeSubFeaturesToGlobalFeatures();
 			}
+
 		}
+
 		saveCompiledNetworks(insts);
 	}
 
 	private void saveCompiledNetworks(Instance[][] insts) {
+
 		if(labeledNetworkByInstanceId == null || unlabeledNetworkByInstanceId == null){
 			labeledNetworkByInstanceId = new Network[this._allInstances.length];
 			unlabeledNetworkByInstanceId = new Network[this._allInstances.length];

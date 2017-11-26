@@ -47,7 +47,7 @@ public class RelationLatentMain{
         double l2 = 0.05;
         zero_digit = true;
         fixEmbedding = true;
-        String embedding = "google";
+        String embedding = "random";
         int embeddingDimension = 300;
         int gpuId = -1;
         iterCount = 4000;

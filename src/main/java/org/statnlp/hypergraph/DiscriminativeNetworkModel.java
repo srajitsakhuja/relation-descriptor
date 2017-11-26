@@ -44,7 +44,6 @@ public class DiscriminativeNetworkModel extends NetworkModel {
 	
 	@Override
 	protected Instance[][] splitInstancesForTrain() {
-		
 		System.err.println("#instances="+this._allInstances.length);
 		
 		Instance[][] insts = new Instance[this._numThreads][];
@@ -81,7 +80,6 @@ public class DiscriminativeNetworkModel extends NetworkModel {
 			}
 			System.out.println("Thread "+threadId+" has "+insts[threadId].length+" instances.");
 		}
-		
 		return insts;
 	}
 	

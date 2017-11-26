@@ -50,6 +50,7 @@ public class RelNetworkCompiler extends NetworkCompiler {
     }
     @Override
     public Network compileLabeled(int networkId, Instance inst, LocalNetworkParam param) {
+        System.out.println("I AM HERE");
         BaseNetwork.NetworkBuilder<BaseNetwork> builder=BaseNetwork.NetworkBuilder.builder();
         RelInstance myInst=(RelInstance)inst;
         List<String> output=myInst.getOutput();
@@ -94,6 +95,7 @@ public class RelNetworkCompiler extends NetworkCompiler {
 
     @Override
     public Network compileUnlabeled(int networkId, Instance inst, LocalNetworkParam param) {
+        System.out.println("I AM HERE FIRST");
 
         BaseNetwork.NetworkBuilder<BaseNetwork> builder=BaseNetwork.NetworkBuilder.builder();
         RelInstance myInst=(RelInstance)inst;

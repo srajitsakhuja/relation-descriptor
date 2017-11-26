@@ -29,6 +29,7 @@ public abstract class BaseInstance<SELF extends BaseInstance<SELF, IN, OUT>, IN,
 			result = (SELF)this.getClass().getConstructor(int.class, double.class).newInstance(this.getInstanceId(), this.getWeight());
 		} catch (InstantiationException | IllegalAccessException | IllegalArgumentException
 				| InvocationTargetException | NoSuchMethodException | SecurityException e) {
+			System.out.println(e);
 			throw new RuntimeException("Instance cannot be automatically duplicated. Please override duplicate() function in Instance implementation.");
 		}
 		result.input = duplicateInput();
@@ -64,6 +65,7 @@ public abstract class BaseInstance<SELF extends BaseInstance<SELF, IN, OUT>, IN,
 			return this.output == null ? null : (OUT)GeneralUtils.getMatchingAvailableConstructor(this.output.getClass(), this.output.getClass()).newInstance(this.output);
 		} catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
 				| NoSuchMethodException | SecurityException e) {
+			System.out.println(e);
 			throw new RuntimeException("Cannot duplicate output automatically, please override duplicateOutput method.");
 		}
 	}
